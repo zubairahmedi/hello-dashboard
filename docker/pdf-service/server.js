@@ -1,5 +1,6 @@
 const express = require('express');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 const cors = require('cors');
 const fs = require('fs');
 
@@ -61,18 +62,19 @@ app.post('/api/generate-pdf', async (req, res) => {
     
     logStep(`Generating PDF: ${filename}, format=${pdfFormat}, orientation=${pdfOrientation}, warmup=${warmup}`);
 
-    // Simple launch args - let Puppeteer's downloaded Chromium handle defaults
-    const launchArgs = [
+    // Use serverless Chromium
+    const launchArgs = chromium.args.concat([
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage'
-    ];
+    ]);
 
     logStep('Launching Chromium', { args: launchArgs });
 
     browser = await puppeteer.launch({
-      headless: 'new',
-      args: launchArgs
+      headless: chromium.headless,
+      args: launchArgs,
+      executablePath: await chromium.executablePath()
     });
 
     logStep('Chromium launched successfully');
