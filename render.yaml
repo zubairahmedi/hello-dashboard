@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: pdf-service
+    runtime: node
+    buildCommand: npm install --only=production
+    startCommand: node /docker/pdf-service/server.js
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: NODE_ENV
+        value: production
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: false
+    plan: standard
+    region: us-west

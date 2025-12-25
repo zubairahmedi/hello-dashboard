@@ -27,9 +27,19 @@ const logStep = (msg, extra = {}) => {
   console.log(`[PDF Service] ${msg}${payload}`);
 };
 
-// CORS: Allow dashboard origin
+// CORS: Allow dashboard + localhost in development
+const allowedOrigins = [
+  'https://dashboard.aiclinicgenius.com',
+  'http://localhost:3000'
+];
+
 const corsOptions = {
-  origin: 'https://dashboard.aiclinicgenius.com',
+  origin: (origin, callback) => {
+    // Allow non-browser requests (no Origin) like curl/servers
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`CORS blocked for origin: ${origin}`), false);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

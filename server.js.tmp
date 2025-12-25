@@ -1,0 +1,241 @@
+const express = require('express');
+const puppeteer = require('puppeteer');
+const cors = require('cors');
+const fs = require('fs');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Prepare writable Chrome data dirs to avoid crashpad errors in containers
+const chromeDirs = [
+  '/tmp/chrome-user-data',
+  '/tmp/chrome-data',
+  '/tmp/chrome-cache',
+  '/tmp/chrome-crashpad'
+];
+chromeDirs.forEach(dir => {
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+  } catch (err) {
+    console.warn(`[PDF Service] Could not create ${dir}: ${err.message}`);
+  }
+});
+
+const logStep = (msg, extra = {}) => {
+  const payload = Object.keys(extra).length ? ` | ${JSON.stringify(extra)}` : '';
+  console.log(`[PDF Service] ${msg}${payload}`);
+};
+
+// Middleware - CORS configuration (single allowed origin)
+const corsOptions = {
+  origin: 'https://dashboard.aiclinicgenius.com',
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+// Explicitly handle preflight
+app.options('*', cors(corsOptions));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'pdf-generator', timestamp: new Date().toISOString() });
+});
+
+// PDF Generation endpoint
+app.post('/api/generate-pdf', async (req, res) => {
+  logStep('Received PDF generation request');
+
+  let browser;
+  try {
+    const { html, css, filename = 'report.pdf', format = 'a4', orientation = 'portrait', warmup = false } = req.body;
+    if (!html) {
+      return res.status(400).json({ error: 'HTML content is required' });
+    }
+    logStep(`Generating PDF: ${filename}, warmup=${warmup}`);
+
+    const launchArgs = [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--user-data-dir=/tmp/chrome-user-data',
+      '--crash-dumps-dir=/tmp/chrome-user-data'
+    ];
+
+    const launchEnv = {
+      ...process.env,
+      DEBUG: 'puppeteer:*',
+      CHROME_LOG_FILE: '/tmp/chrome_debug.log',
+      BREAKPAD_IGNORE_PIPE_WATCHER: '1',
+      BREAKPAD_IGNORE_SIGNAL: '1'
+    };
+
+    logStep('Launching Chromium', {
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 'default',
+      args: launchArgs,
+      env: { DEBUG: launchEnv.DEBUG, CHROME_LOG_FILE: launchEnv.CHROME_LOG_FILE }
+    });
+
+    // Launch Puppeteer with minimal, container-friendly settings
+    browser = await puppeteer.launch({
+      headless: 'new',
+      args: launchArgs,
+      dumpio: true,
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      env: launchEnv
+    });
+
+    logStep('Chromium launched');
+
+    const page = await browser.newPage();
+    logStep('New page created');
+
+    // Set viewport for consistent rendering
+    await page.setViewport({
+      width: orientation === 'landscape' ? 1920 : 1280,
+      height: orientation === 'landscape' ? 1080 : 1600,
+      deviceScaleFactor: 2
+    });
+    logStep('Viewport set', { width: orientation === 'landscape' ? 1920 : 1280, height: orientation === 'landscape' ? 1080 : 1600 });
+
+    // Construct complete HTML with CSS
+    const fullHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            ${css || ''}
+            body {
+              margin: 0;
+              padding: 0;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+          </style>
+        </head>
+        <body>
+          ${html}
+        </body>
+      </html>
+    `;
+
+    // Load HTML content
+    await page.setContent(fullHTML, {
+      waitUntil: ['networkidle0', 'domcontentloaded'],
+      timeout: 30000
+    });
+    logStep('Content set');
+
+    // Wait for charts to render (Recharts needs extra time)
+    await page.waitForTimeout(2000);
+    logStep('Post-content wait complete');
+
+    // Ensure all images and fonts are loaded
+    await page.evaluate(() => {
+      return Promise.all([
+        ...Array.from(document.images)
+          .filter(img => !img.complete)
+          .map(img => new Promise(resolve => {
+            img.onload = img.onerror = resolve;
+          })),
+        document.fonts.ready
+      ]);
+    });
+    logStep('Assets loaded');
+
+    // Additional wait for dynamic content
+    await page.waitForTimeout(1000);
+    logStep('Final wait complete');
+
+    logStep('Generating PDF now');
+
+    // Generate PDF
+    const pdfBuffer = await page.pdf({
+      format: format.toUpperCase(),
+      landscape: orientation === 'landscape',
+      printBackground: true,
+      preferCSSPageSize: false,
+      displayHeaderFooter: false,
+      margin: {
+        top: '20px',
+        right: '20px',
+        bottom: '20px',
+        left: '20px'
+      }
+    });
+
+    await browser.close();
+    browser = null;
+    logStep('Browser closed');
+
+    // If this is a warmup pass, just return success
+    if (warmup) {
+      console.log('[PDF Service] Warmup pass completed');
+      return res.json({ success: true, warmup: true });
+    }
+
+    // Send PDF as response
+    logStep(`PDF generated successfully: ${pdfBuffer.length} bytes`);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+    res.send(pdfBuffer);
+
+  } catch (error) {
+    console.error('[PDF Service] Error generating PDF:', error);
+    if (error && error.stack) {
+      console.error('[PDF Service] Stack:', error.stack);
+    }
+    if (error && error.stderr) {
+      console.error('[PDF Service] Stderr:', error.stderr.toString());
+    }
+    if (error && error.stdout) {
+      console.error('[PDF Service] Stdout:', error.stdout.toString());
+    }
+
+    if (browser) {
+      try {
+        await browser.close();
+      } catch (closeError) {
+        console.error('[PDF Service] Error closing browser:', closeError);
+      }
+    }
+
+    res.status(500).json({
+      error: 'Failed to generate PDF',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('[PDF Service] Unhandled error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: err.message
+  });
+});
+
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`[PDF Service] Server running on port ${PORT}`);
+  console.log(`[PDF Service] Health check: http://localhost:${PORT}/health`);
+  console.log(`[PDF Service] PDF endpoint: http://localhost:${PORT}/api/generate-pdf`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('[PDF Service] SIGTERM received, shutting down gracefully...');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('[PDF Service] SIGINT received, shutting down gracefully...');
+  process.exit(0);
+});

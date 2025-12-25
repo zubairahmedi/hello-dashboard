@@ -1,0 +1,39 @@
+services:
+  pdf-service:
+    build: .
+    container_name: pdf-service
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    networks:
+      - root_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pdfservice.rule=Host(`api.dashboard.aiclinicgenius.com`)"
+      - "traefik.http.routers.pdfservice.entrypoints=web,websecure"
+      - "traefik.http.routers.pdfservice.tls=true"
+      - "traefik.http.routers.pdfservice.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.pdfservice.loadbalancer.server.port=3001"
+      # CORS headers
+      - "traefik.http.middlewares.pdf-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS"
+      - "traefik.http.middlewares.pdf-cors.headers.accesscontrolalloworiginlist=https://dashboard.aiclinicgenius.com"
+      - "traefik.http.middlewares.pdf-cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.pdf-cors.headers.addvaryheader=true"
+      - "traefik.http.routers.pdfservice.middlewares=pdf-cors"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  root_default:
+    external: true
