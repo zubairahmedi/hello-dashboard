@@ -2,8 +2,9 @@
  * Consultant Meta Ads Service
  * Fetches and manages consultant-level Meta Ads tagged contacts data
  */
+import API_CONFIG from '../config/apiConfig';
 
-const CONSULTANT_META_ADS_WEBHOOK = 'https://n8n.aiclinicgenius.com/webhook/d27d1b26-441a-490c-b5fb-5f6633dab10c';
+const CONSULTANT_META_ADS_WEBHOOK = API_CONFIG.CONSULTANT_META_ADS_WEBHOOK;
 export const CONSULTANT_META_ADS_KEY = 'consultantMetaAds';
 
 /**
@@ -12,7 +13,6 @@ export const CONSULTANT_META_ADS_KEY = 'consultantMetaAds';
  */
 export async function fetchConsultantMetaAds() {
   try {
-    console.log('[ConsultantMetaAdsService] Fetching from webhook...');
     const response = await fetch(CONSULTANT_META_ADS_WEBHOOK, {
       method: 'GET',
       headers: {

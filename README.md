@@ -77,7 +77,16 @@ hello-dashboard/
    npm install
    ```
 
-3. **Start development server**
+3. **Configure environment variables**
+   ```bash
+   # Copy the example file
+   cp .env.example .env.local
+   
+   # Edit .env.local with your actual values
+   # Set authentication credentials and API endpoints
+   ```
+
+4. **Start development server**
    ```bash
    # Run frontend only
    npm start
@@ -89,7 +98,7 @@ hello-dashboard/
    npm run dev
    ```
 
-4. **Access the application**
+5. **Access the application**
    - Frontend: http://localhost:3000
    - Backend: http://localhost:5000
 
@@ -135,13 +144,28 @@ The production build will be created in the `build/` directory.
 
 ### Environment Variables
 
-Create a `.env` file in the root directory:
+All sensitive configuration is managed through environment variables. See [.env.example](.env.example) for all available options.
 
-```env
-PORT=5000
-NODE_ENV=production
-REACT_APP_API_URL=http://localhost:5000
+**Required Configuration:**
+- `REACT_APP_LOGIN_EMAIL` - Admin email for authentication
+- `REACT_APP_LOGIN_PASSWORD` - Admin password for authentication
+- `REACT_APP_PDF_SERVICE_URL` - PDF generation service endpoint
+- `REACT_APP_AIRTABLE_WEBHOOK` - Main data source webhook
+- Meta Ads webhook URLs (by account)
+
+**Setup:**
+```bash
+# Copy example file
+cp .env.example .env.local
+
+# Edit with your values
+nano .env.local  # or use your preferred editor
 ```
+
+**Security Notes:**
+- Never commit `.env.local` or `.env` files
+- All environment variables use `REACT_APP_` prefix for Create React App compatibility
+- Default fallback values are provided in [src/config/apiConfig.js](src/config/apiConfig.js)
 
 ### Puppeteer Configuration
 

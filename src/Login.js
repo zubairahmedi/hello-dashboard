@@ -9,9 +9,9 @@ function Login({ onLogin }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Hardcoded credentials
-    const VALID_EMAIL = 'dev@lincroftdigital.com';
-    const VALID_PASSWORD = 'dev@lincroftdigital.com';
+    // Credentials validation
+    const VALID_EMAIL = process.env.REACT_APP_LOGIN_EMAIL || 'admin@franchiseexperts.com';
+    const VALID_PASSWORD = process.env.REACT_APP_LOGIN_PASSWORD || 'demo123';
     
     if (email === VALID_EMAIL && password === VALID_PASSWORD) {
       onLogin();
@@ -56,12 +56,6 @@ function Login({ onLogin }) {
             Login
           </button>
         </form>
-        
-        <div className="demo-credentials">
-          <p><strong>Demo Credentials:</strong></p>
-          <p>Email: dev@lincroftdigital.com</p>
-          <p>Password: dev@lincroftdigital.com </p>
-        </div>
       </div>
     </div>
   );

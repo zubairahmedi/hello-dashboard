@@ -11,6 +11,7 @@ import {
 } from './utils/indexedDbService';
 import MetaAds from './components/MetaAds/MetaAds';
 import Sources from './components/Sources/Sources';
+import API_CONFIG from './config/apiConfig';
 
 const CACHE_KEY = 'dashboardData';
 
@@ -60,7 +61,7 @@ function Dashboard({ onLogout }) {
     setError(null);
     
     try {
-      const response = await fetch('https://n8n.aiclinicgenius.com/webhook/airtable');
+      const response = await fetch(API_CONFIG.AIRTABLE_WEBHOOK);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
