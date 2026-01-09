@@ -11,46 +11,31 @@
   margin-bottom: 20px;
 }
 
-.refresh-button {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.refresh-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-}
-
-.refresh-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 .data-info {
-  color: #28a745;
+  color: #0066cc;
   font-weight: 500;
+  background: #f0f0f0;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
 }
 
 .error-box {
   background: #fee;
-  color: #c33;
-  padding: 16px;
-  border-radius: 8px;
-  border-left: 4px solid #c33;
+  color: #c00;
+  padding: 12px 16px;
+  border-radius: 6px;
   margin-bottom: 20px;
+  border-left: 4px solid #c00;
 }
 
 .data-display {
   background: #f8f9fa;
-  border: 2px solid #dee2e6;
-  border-radius: 8px;
-  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 16px;
+  overflow: auto;
+  max-height: 600px;
 }
 
 .data-display h3 {
@@ -58,20 +43,24 @@
   color: #333;
 }
 
-.data-display pre {
-  background: #fff;
-  padding: 20px;
+/* Button styles for consistency */
+.refresh-button {
+  padding: 8px 20px;
+  background: #0066cc;
+  color: white;
+  border: none;
   border-radius: 6px;
-  overflow: auto;
-  max-height: 600px;
-  font-size: 13px;
-  line-height: 1.6;
-  border: 1px solid #dee2e6;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s ease;
 }
 
-.placeholder {
-  text-align: center;
-  padding: 60px 20px;
-  color: #666;
-  font-size: 18px;
+.refresh-button:hover:not(:disabled) {
+  background: #0052a3;
+}
+
+.refresh-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }

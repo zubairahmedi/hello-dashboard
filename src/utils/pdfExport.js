@@ -114,6 +114,11 @@ function prepareCloneForPDF(clone, exportType = 'dashboard') {
       transition: none !important;
     }
 
+    /* Hide UI chrome (nav, filters) that should not appear in PDF */
+    .pdf-hide {
+      display: none !important;
+    }
+
     /* Hide export buttons */
     .export-btn,
     [class*="export-button"],

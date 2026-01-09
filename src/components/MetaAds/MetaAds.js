@@ -6,6 +6,7 @@ import MetaAdsAccountView from './MetaAdsAccountView';
 import MonthComparison from './MonthComparison';
 import YearlyView from './YearlyView';
 import OverviewView from './OverviewView';
+import ConsultantMetaAdsView from './ConsultantMetaAdsView';
 import {
   initDB,
   getData,
@@ -23,6 +24,10 @@ import {
   isDeltaConfigured
 } from '../../utils/metaAdsService';
 import { buildMonthOptions, filterRowsByMonth } from '../../utils/timeFilterService';
+import {
+  fetchConsultantMetaAds,
+  CONSULTANT_META_ADS_KEY
+} from '../../utils/consultantMetaAdsService';
 
 // Fixed account tabs
 const ACCOUNT_TABS = [
@@ -46,7 +51,11 @@ function MetaAds() {
   const [selectedAccount, setSelectedAccount] = useState('Account Overview');
   const [selectedMonthKey, setSelectedMonthKey] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [mainViewMode, setMainViewMode] = useState('accounts'); // 'accounts' or 'consultants'
   const [viewMode, setViewMode] = useState('monthly'); // 'monthly' or 'yearly'
+  const [consultantData, setConsultantData] = useState(null);
+  const [consultantLoading, setConsultantLoading] = useState(false);
+  const [consultantDataFreshness, setConsultantDataFreshness] = useState(null);
 
   // Load cached merged data on mount and run a quick delta update
   useEffect(() => {
@@ -59,8 +68,6 @@ function MetaAds() {
         console.log('[MetaAds] Cache check complete:', { hasCached });
         if (isDeltaConfigured()) {
           await handleQuickUpdate();
-        } else {
-          setStatus('Delta webhook not configured; skipping Quick Update');
         }
       } catch (err) {
         console.error('Meta Ads init failed', err);
@@ -86,7 +93,7 @@ function MetaAds() {
         setMergedData(actualData);
         setDataFreshness(getDataFreshnessMessage(cached.savedAt));
         setIsCached(true);
-        setStatus('Showing cached Meta Ads data');
+        setStatus('');
         return true;
       } else {
         console.log('[MetaAds] No cached data found');
@@ -99,12 +106,11 @@ function MetaAds() {
 
   const handleQuickUpdate = useCallback(async () => {
     if (!isDeltaConfigured()) {
-      setStatus('Delta webhook not configured; skipping Quick Update');
       return;
     }
     setQuickLoading(true);
     setError(null);
-    setStatus('Running quick update (delta)...');
+    setStatus('');
 
     try {
       const baseFull = await getData(META_ADS_FULL_KEY);
@@ -118,11 +124,11 @@ function MetaAds() {
       setMergedData(merged);
       setDataFreshness(getDataFreshnessMessage(Date.now()));
       setIsCached(false);
-      setStatus('Quick update complete');
+      setStatus('');
     } catch (err) {
       console.error('Meta Ads quick update failed', err);
       setError(err.message);
-      setStatus('Quick update failed; falling back to cache if available');
+      setStatus('');
       await loadCachedMerged();
     } finally {
       setQuickLoading(false);
@@ -133,7 +139,7 @@ function MetaAds() {
     setHardLoading(true);
     setError(null);
     const targetAccount = selectedAccount && selectedAccount !== 'Account Overview' ? selectedAccount : 'MFE - BEAUTY';
-    setStatus(selectedAccount === 'Account Overview' ? 'Fetching all configured accounts...' : `Fetching ${targetAccount} data...`);
+    setStatus(''); // Clear status during fetch
 
     try {
       let combinedData;
@@ -142,7 +148,6 @@ function MetaAds() {
         // Fetch all configured accounts in parallel and combine
         const all = await fetchAllAccounts();
         combinedData = all.data ?? [];
-        setStatus(`Fetch complete - ${combinedData.length} total rows across accounts`);
       } else {
         // Fetch only the selected account, then merge into existing cache so other accounts persist
         const result = await fetchMetaAdsForAccount(targetAccount);
@@ -156,7 +161,6 @@ function MetaAds() {
         // Remove old rows for the target account to avoid duplication
         const baseWithoutTarget = baseArray.filter((row) => row?.accountname !== targetAccount);
         combinedData = [...baseWithoutTarget, ...incoming];
-        setStatus(`Fetch complete - updated ${targetAccount} (${incoming.length} rows), keeping other accounts (${baseWithoutTarget.length} rows)`);
       }
 
       const payload = { data: combinedData, lastUpdated: Date.now() };
@@ -167,15 +171,72 @@ function MetaAds() {
       setMergedData(combinedData);
       setDataFreshness(getDataFreshnessMessage(Date.now()));
       setIsCached(false);
+      setStatus(''); // Clear status after successful fetch
     } catch (err) {
       console.error('Meta Ads hard refresh failed', err);
       setError(`${err.message}`);
-      setStatus('Fetch failed; showing cached if available');
+      setStatus('');
       await loadCachedMerged();
     } finally {
       setHardLoading(false);
     }
   }, [loadCachedMerged, selectedAccount]);
+
+  const handleConsultantRefresh = useCallback(async () => {
+    setConsultantLoading(true);
+    setError(null);
+
+    try {
+      console.log('[MetaAds] Fetching consultant meta ads data...');
+      const result = await fetchConsultantMetaAds();
+      
+      // Save to IndexedDB
+      const payload = { data: result.data, lastUpdated: result.lastUpdated };
+      await saveData(CONSULTANT_META_ADS_KEY, payload);
+      
+      setConsultantData(result.data);
+      setConsultantDataFreshness(getDataFreshnessMessage(result.lastUpdated));
+    } catch (err) {
+      console.error('[MetaAds] Consultant data fetch failed:', err);
+      setError(`Failed to fetch consultant data: ${err.message}`);
+      
+      // Try to load from cache on error
+      try {
+        const cached = await getData(CONSULTANT_META_ADS_KEY);
+        if (cached) {
+          const actualData = cached.data?.data || cached.data || cached;
+          setConsultantData(actualData);
+          setConsultantDataFreshness(getDataFreshnessMessage(cached.savedAt));
+        }
+      } catch (cacheErr) {
+        console.error('[MetaAds] Cache read failed:', cacheErr);
+      }
+    } finally {
+      setConsultantLoading(false);
+    }
+  }, []);
+
+  // Load consultant data from cache when switching to consultants view
+  useEffect(() => {
+    if (mainViewMode === 'consultants' && !consultantData) {
+      const loadConsultantCache = async () => {
+        try {
+          const cached = await getData(CONSULTANT_META_ADS_KEY);
+          if (cached) {
+            const actualData = cached.data?.data || cached.data || cached;
+            setConsultantData(actualData);
+            setConsultantDataFreshness(getDataFreshnessMessage(cached.savedAt));
+          } else {
+            // Auto-fetch if no cache exists
+            await handleConsultantRefresh();
+          }
+        } catch (err) {
+          console.error('[MetaAds] Failed to load consultant cache:', err);
+        }
+      };
+      loadConsultantCache();
+    }
+  }, [mainViewMode, consultantData, handleConsultantRefresh]);
 
   const dataArray = Array.isArray(mergedData) ? mergedData : [];
 
@@ -215,50 +276,70 @@ function MetaAds() {
   }, [dataArray, selectedAccount, selectedMonthKey, monthOptions]);
 
   return (
-    <div className="meta-ads-page">
-      <div className="meta-ads-header">
+    <div id="meta-ads-root" className="meta-ads-page">
+      <div className="meta-ads-header pdf-hide">
         <div>
           <h2>Meta Ads</h2>
           <p className="meta-ads-subtitle">Showing aggregated monthly data per account</p>
         </div>
-        <div className="meta-ads-actions">
-          {dataFreshness && (
-            <span
-              className="data-freshness"
-              title={isCached ? 'Data from browser cache' : 'Live Meta Ads data'}
+        {mainViewMode === 'accounts' && (
+          <div className="meta-ads-actions">
+            {dataFreshness && (
+              <span
+                className="data-freshness"
+                title={isCached ? 'Data from browser cache' : 'Live Meta Ads data'}
+              >
+                {dataFreshness}
+              </span>
+            )}
+            <button
+              className="refresh-button hard-refresh"
+              onClick={handleHardRefresh}
+              disabled={hardLoading || quickLoading}
+              title="Fetch latest aggregated data from n8n"
             >
-              {dataFreshness}
-            </span>
-          )}
-          <button
-            className="refresh-button hard-refresh"
-            onClick={handleHardRefresh}
-            disabled={hardLoading || quickLoading}
-            title="Fetch latest aggregated data from n8n"
-          >
-            {hardLoading ? 'Fetching…' : 'Refresh Data'}
-          </button>
-          <button
-            className="refresh-button quick-refresh"
-            onClick={handleQuickUpdate}
-            disabled={hardLoading || quickLoading}
-            title="Fetch only updated rows since last update (faster)"
-          >
-            {quickLoading ? 'Updating…' : 'Quick Update'}
-          </button>
-        </div>
+              {hardLoading ? 'Fetching…' : 'Refresh Data'}
+            </button>
+            <button
+              className="refresh-button quick-refresh"
+              onClick={handleQuickUpdate}
+              disabled={hardLoading || quickLoading}
+              title="Fetch only updated rows since last update (faster)"
+            >
+              {quickLoading ? 'Updating…' : 'Quick Update'}
+            </button>
+          </div>
+        )}
       </div>
 
       {status && <div className="meta-ads-status">{status}</div>}
       {error && <div className="meta-ads-error">{error}</div>}
 
+      {/* Main View Switcher */}
+      <div className="main-view-switcher">
+        <button
+          className={`main-view-btn ${mainViewMode === 'accounts' ? 'active' : ''}`}
+          onClick={() => setMainViewMode('accounts')}
+        >
+          Accounts View
+        </button>
+        <button
+          className={`main-view-btn ${mainViewMode === 'consultants' ? 'active' : ''}`}
+          onClick={() => setMainViewMode('consultants')}
+        >
+          Consultants View
+        </button>
+      </div>
+
       <div className="meta-ads-placeholder-card">
-        <h3>Meta Ads Performance</h3>
-        <p>Select an account tab to view detailed metrics and charts</p>
-        {!mergedData && <p className="muted">No Meta Ads data loaded yet. Click "Refresh Data" to fetch.</p>}
+        {mainViewMode === 'accounts' ? (
+          <>
+            <h3>Meta Ads Performance</h3>
+            <p>Select an account tab to view detailed metrics and charts</p>
+            {!mergedData && <p className="muted">No Meta Ads data loaded yet. Click "Refresh Data" to fetch.</p>}
 
         {/* Account tabs */}
-        <div className="meta-ads-filters">
+        <div className="meta-ads-filters pdf-hide">
           <div className="meta-ads-tabs" role="tablist">
             {ACCOUNT_TABS.map((acct) => (
               <button
@@ -326,6 +407,31 @@ function MetaAds() {
         )}
 
         {/* Raw data preview removed per request */}
+          </>
+        ) : (
+          <>
+            <div className="consultant-view-header">
+              <div>
+                <h3>Consultants View</h3>
+                <p className="muted">Tagged contacts by consultant across campaigns</p>
+                {consultantDataFreshness && (
+                  <span className="data-freshness" style={{ fontSize: '12px', marginTop: '8px', display: 'inline-block' }}>
+                    {consultantDataFreshness}
+                  </span>
+                )}
+              </div>
+              <button
+                className="refresh-button hard-refresh"
+                onClick={handleConsultantRefresh}
+                disabled={consultantLoading}
+                title="Fetch latest consultant data"
+              >
+                {consultantLoading ? 'Fetching…' : 'Refresh Consultant Data'}
+              </button>
+            </div>
+            <ConsultantMetaAdsView data={consultantData} />
+          </>
+        )}
       </div>
     </div>
   );

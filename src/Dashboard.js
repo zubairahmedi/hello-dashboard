@@ -10,6 +10,7 @@ import {
   getDataFreshnessMessage 
 } from './utils/indexedDbService';
 import MetaAds from './components/MetaAds/MetaAds';
+import Sources from './components/Sources/Sources';
 
 const CACHE_KEY = 'dashboardData';
 
@@ -20,6 +21,7 @@ function Dashboard({ onLogout }) {
   const [error, setError] = useState(null);
   const [dataFreshness, setDataFreshness] = useState(null); // Track data freshness
   const [isCached, setIsCached] = useState(false); // Track if data is from cache
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Initialize IndexedDB on component mount
   useEffect(() => {
@@ -96,9 +98,24 @@ function Dashboard({ onLogout }) {
     // This keeps the two data sources independent and prevents response mixing
   };
 
+  const selectTab = (tab) => {
+    setActiveTab(tab);
+    setMenuOpen(false);
+  };
+
+  const handleRefreshAndClose = () => {
+    setMenuOpen(false);
+    handleRefresh();
+  };
+
+  const handleLogout = () => {
+    setMenuOpen(false);
+    onLogout();
+  };
+
   return (
     <div id="dashboard-root" className="dashboard-container">
-      <nav className="dashboard-nav">
+      <nav className="dashboard-nav pdf-hide">
         <div className="nav-left">
           <h2>Franchise Experts</h2>
           {dataFreshness && (
@@ -107,49 +124,94 @@ function Dashboard({ onLogout }) {
             </span>
           )}
         </div>
-        <div className="nav-buttons">
+        <div className="nav-dropdown">
           <button
-            onClick={() => setActiveTab('totals')}
-            className={activeTab === 'totals' ? 'active-tab' : ''}
+            className="nav-dropdown-trigger"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-haspopup="true"
+            aria-expanded={menuOpen}
           >
-            Totals
+            ☰ Menu
           </button>
-          <button
-            onClick={() => setActiveTab('consultants')}
-            className={activeTab === 'consultants' ? 'active-tab' : ''}
-          >
-            Consultants
-          </button>
-          <button
-            onClick={() => setActiveTab('metaAds')}
-            className={activeTab === 'metaAds' ? 'active-tab' : ''}
-          >
-            Meta Ads
-          </button>
+          {menuOpen && (
+            <div className="nav-dropdown-menu" role="menu">
+              <button
+                role="menuitem"
+                className={`nav-dropdown-item ${activeTab === 'totals' ? 'active' : ''}`}
+                onClick={() => selectTab('totals')}
+              >
+                Totals
+              </button>
+              <button
+                role="menuitem"
+                className={`nav-dropdown-item ${activeTab === 'consultants' ? 'active' : ''}`}
+                onClick={() => selectTab('consultants')}
+              >
+                Consultants
+              </button>
+              <button
+                role="menuitem"
+                className={`nav-dropdown-item ${activeTab === 'metaAds' ? 'active' : ''}`}
+                onClick={() => selectTab('metaAds')}
+              >
+                Meta Ads
+              </button>
+              <button
+                role="menuitem"
+                className={`nav-dropdown-item ${activeTab === 'sources' ? 'active' : ''}`}
+                onClick={() => selectTab('sources')}
+              >
+                Sources
+              </button>
 
-          <button 
-            onClick={handleRefresh}
-            className="refresh-button"
-            title="Fetch fresh data from webhook"
-            disabled={loading}
-          >
-            {loading ? 'Loading...' : 'Refresh'}
-          </button>
+              <div className="nav-dropdown-divider" />
 
-          {activeTab === 'totals' && (
-            <button
-              id="export-dashboard-pdf"
-              onClick={() => exportNodeAsPdf('dashboard-root', { filename: 'dashboard-report.pdf' })}
-              className="export-button"
-              title="Export dashboard as PDF"
-            >
-              Export PDF
-            </button>
+              <button
+                role="menuitem"
+                className="nav-dropdown-item"
+                onClick={handleRefreshAndClose}
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : 'Refresh Data'}
+              </button>
+
+              {activeTab === 'totals' && (
+                <button
+                  role="menuitem"
+                  className="nav-dropdown-item"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    exportNodeAsPdf('dashboard-root', { filename: 'dashboard-report.pdf' });
+                  }}
+                >
+                  Export Dashboard PDF
+                </button>
+              )}
+
+              {activeTab === 'metaAds' && (
+                <button
+                  role="menuitem"
+                  className="nav-dropdown-item"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    exportNodeAsPdf('meta-ads-root', { filename: 'meta-ads-report.pdf' });
+                  }}
+                >
+                  Export Meta Ads PDF
+                </button>
+              )}
+
+              <div className="nav-dropdown-divider" />
+
+              <button
+                role="menuitem"
+                className="nav-dropdown-item logout"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
           )}
-
-          <button onClick={onLogout} className="logout-button">
-            Logout
-          </button>
         </div>
       </nav>
 
@@ -176,6 +238,10 @@ function Dashboard({ onLogout }) {
 
         {activeTab === 'metaAds' && (
           <MetaAds />
+        )}
+
+        {activeTab === 'sources' && (
+          <Sources />
         )}
       </div>
     </div>

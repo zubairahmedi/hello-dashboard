@@ -393,7 +393,6 @@ function AnalyticsDashboard({ data }) {
           <div className="referral-card">
             <div className="referral-title">Total Referrals</div>
             <div className="referral-value">{referralStats.totalReferrals}</div>
-            <div className="referral-rate">{referralStats.referralRate}% of leads</div>
           </div>
           <div className="referral-card">
             <div className="referral-title">Top Referrer</div>
@@ -433,16 +432,16 @@ function AnalyticsDashboard({ data }) {
         <h2>Conversion Funnel</h2>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={funnelData} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" />
-            <YAxis dataKey="stage" type="category" width={100} />
-            <Tooltip formatter={(value) => value.toLocaleString()} />
-            <Bar dataKey="value" fill="#667eea" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#0F172A22" />
+            <XAxis type="number" stroke="#0F172A" tick={{ fill: '#0F172A', fontWeight: 600 }} />
+            <YAxis dataKey="stage" type="category" width={100} stroke="#0F172A" tick={{ fill: '#0F172A', fontWeight: 600 }} />
+            <Tooltip formatter={(value) => value.toLocaleString()} contentStyle={{ background: '#111827', color: '#fff', border: 'none' }} itemStyle={{ color: '#fff' }} cursor={{ fill: '#0066cc22' }} />
+            <Bar dataKey="value" fill="#0066cc" radius={[6, 6, 6, 6]} />
           </BarChart>
         </ResponsiveContainer>
         <div className="funnel-stats">
           {funnelData.map((stage, idx) => (
-            <div key={idx} className="funnel-stat">
+            <div key={idx} className="funnel-stat funnel-blue">
               <span>{stage.stage}:</span>
               <strong>{stage.value.toLocaleString()}</strong>
               <span className="funnel-pct">({stage.pct}%)</span>
@@ -515,6 +514,7 @@ function AnalyticsDashboard({ data }) {
       </div>
 
       {/* Charts Section */}
+
       <div className="charts-section">
         <div className="chart-container">
           <h3>📊 Leads by Consultant</h3>
@@ -558,10 +558,13 @@ function AnalyticsDashboard({ data }) {
             </LineChart>
           </ResponsiveContainer>
         </div>
+      </div>
 
-        <div className="chart-container">
-          <h3>🎯 Appointment Status Breakdown</h3>
-          <ResponsiveContainer width="100%" height={300}>
+      {/* Centered Appointment Status Breakdown Chart */}
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '40px 0' }}>
+        <div className="chart-container" style={{ width: 600, maxWidth: '100%' }}>
+          <h3 style={{ textAlign: 'center' }}>🎯 Appointment Status Breakdown</h3>
+          <ResponsiveContainer width={500} height={400}>
             <PieChart>
               <Pie
                 data={appointmentStatusData}
@@ -569,7 +572,7 @@ function AnalyticsDashboard({ data }) {
                 cy="50%"
                 labelLine={false}
                 label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                outerRadius={100}
+                outerRadius={140}
                 fill="#8884d8"
                 dataKey="value"
               >

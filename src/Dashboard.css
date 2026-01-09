@@ -2,164 +2,181 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  background: linear-gradient(180deg, #ffffff 0%, #f7f8fc 100%);
-  border-bottom: 1px solid rgba(102, 126, 234, 0.08);
-  box-shadow: 0 2px 8px rgba(34, 50, 84, 0.05);
+  padding: 20px 32px;
+  background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%) !important;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  position: relative;
 }
 
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 20px;
-}
-
-.dashboard-nav h2 {
-  margin: 0;
-  font-size: 22px;
-  color: #0f1724;
-  letter-spacing: -0.5px;
+  gap: 24px;
 }
 
 .data-freshness {
-  font-size: 12px;
-  font-weight: 500;
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.08);
-  padding: 6px 12px;
-  border-radius: 20px;
-  white-space: nowrap;
-  cursor: help;
-  transition: all 200ms ease;
-  border: 1px solid rgba(102, 126, 234, 0.15);
+  display: none !important;
 }
 
-.data-freshness:hover {
-  background: rgba(102, 126, 234, 0.12);
-  border-color: rgba(102, 126, 234, 0.25);
-}
 
-.nav-buttons {
+/* Dropdown menu for primary nav */
+.nav-dropdown {
+  position: relative;
   display: flex;
-  gap: 10px;
   align-items: center;
 }
 
-.nav-buttons button {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
+.nav-dropdown-trigger {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: 0.6px;
   cursor: pointer;
-  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(10px);
+  transition: all 180ms ease;
+  min-width: 120px;
   font-size: 14px;
-  transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 100px;
-  text-align: center;
-  box-shadow: 0 4px 12px rgba(34, 50, 84, 0.08);
-  position: relative;
-  overflow: hidden;
 }
 
-.nav-buttons button::before {
-  content: '';
+.nav-dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.55);
+  transform: translateY(-2px) scale(1.01);
+}
+
+.nav-dropdown-menu {
   position: absolute;
-  top: 0;
-  left: -100%;
+  right: 0;
+  top: calc(100% + 10px);
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  min-width: 220px;
+  padding: 10px 0;
+  z-index: 1100;
+  border: 1px solid #e5e7ef;
+}
+
+.nav-dropdown-item {
   width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.1);
-  transition: left 180ms ease;
-}
-
-.nav-buttons button:hover::before {
-  left: 100%;
-}
-
-.nav-buttons button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(34, 50, 84, 0.12);
-}
-
-.nav-buttons button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(34, 50, 84, 0.08);
-}
-
-/* Tab buttons (Totals, Consultants) */
-.nav-buttons button:not(.refresh-button):not(.logout-button) {
-  background: white;
-  color: #667eea;
-  border: 1px solid rgba(102, 126, 234, 0.2);
-}
-
-.nav-buttons button:not(.refresh-button):not(.logout-button):hover {
-  background: #f6f8ff;
-  border-color: #667eea;
-}
-
-.nav-buttons .active-tab {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  padding: 12px 16px;
+  background: transparent;
   border: none;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+  text-align: left;
+  font-weight: 600;
+  color: #3a3d4d;
+  cursor: pointer;
+  transition: all 160ms ease;
 }
 
-.nav-buttons .active-tab:hover {
-  box-shadow: 0 8px 28px rgba(102, 126, 234, 0.35);
+.nav-dropdown-item:hover {
+  background: #f4f6fb;
 }
 
-/* Refresh button */
+.nav-dropdown-item.active {
+  background: #eef2ff;
+  color: #4c51bf;
+  border-left: 4px solid #667eea;
+  padding-left: 12px;
+}
+
+.nav-dropdown-item.logout {
+  color: #d7263d;
+}
+
+.nav-dropdown-divider {
+  height: 1px;
+  background: #eceff7;
+  margin: 6px 0;
+}
+
 .refresh-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+  background: #ffffff;
+  color: #667eea;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  font-weight: 700;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
 .refresh-button:hover {
-  box-shadow: 0 8px 28px rgba(102, 126, 234, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  background: #f8f9ff;
 }
 
 /* Logout button */
 .logout-button {
-  background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
+  background: rgba(239, 83, 80, 0.95);
   color: white;
-  box-shadow: 0 6px 20px rgba(239, 83, 80, 0.25);
+  box-shadow: 0 4px 16px rgba(239, 83, 80, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
 }
 
 .logout-button:hover {
-  box-shadow: 0 8px 28px rgba(239, 83, 80, 0.3);
+  box-shadow: 0 6px 20px rgba(239, 83, 80, 0.5);
+  background: rgba(229, 57, 53, 0.95);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .logout-button:active {
-  background: linear-gradient(135deg, #e53935 0%, #d32f2f 100%);
+  background: rgba(211, 47, 47, 0.95);
 }
 
-.nav-buttons button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+.refresh-button:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  background: #f8f9ff;
 }
 
-.nav-buttons button:disabled:hover {
-  transform: none;
-  box-shadow: 0 4px 12px rgba(34, 50, 84, 0.08);
+/* Logout button */
+.logout-button {
+  background: rgba(239, 83, 80, 0.95);
+  color: white;
+  box-shadow: 0 4px 16px rgba(239, 83, 80, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  box-shadow: 0 6px 20px rgba(239, 83, 80, 0.5);
+  background: rgba(229, 57, 53, 0.95);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.logout-button:active {
+  background: rgba(211, 47, 47, 0.95);
 }
 
 /* Export button (used in nav and consultant pages) */
 .export-button,
 .export-btn {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+  background: #10b981 !important;
   color: white !important;
-  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.3) !important;
-  border: none !important;
-  padding: 10px 20px !important;
-  border-radius: 8px !important;
-  font-weight: 600 !important;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4) !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  padding: 11px 24px !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
   font-size: 14px !important;
   cursor: pointer !important;
-  transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
   position: relative !important;
   overflow: hidden !important;
   min-width: auto !important;
+  letter-spacing: 0.3px !important;
 }
 
 .export-button::before,
@@ -170,8 +187,8 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.1);
-  transition: left 180ms ease;
+  background: rgba(255, 255, 255, 0.15);
+  transition: left 250ms ease;
 }
 
 .export-button:hover::before,
@@ -182,13 +199,15 @@
 .export-button:hover,
 .export-btn:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 28px rgba(6, 182, 212, 0.4) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5) !important;
+  background: #059669 !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
 }
 
 .export-button:active,
 .export-btn:active {
   transform: translateY(0) !important;
-  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
 }
 
 /* Meta Ads page scaffolding */
@@ -385,5 +404,9 @@
 
 .preview-toggle:hover {
   background: #f6f8ff;
+}
+
+.dashboard-nav h2 {
+  color: #fff !important;
 }
 

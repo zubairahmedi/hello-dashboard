@@ -12,7 +12,10 @@ param(
     [string]$BUILD_PATH = "/docker/hello-dashboard/build",
     
     [Parameter(Mandatory=$false)]
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$FixPerms = $true
 )
 
 # Colors for output
@@ -105,7 +108,31 @@ try {
 }
 
 # Step 4: Restart Container
-Write-Host "`nStep 4: Restarting Docker container..." @InfoColor
+Write-Host "`nStep 4: Fixing permissions (dirs 755, files 644)..." @InfoColor
+try {
+    $permCmd = "find $BUILD_PATH -type d -exec chmod 755 {} \; && find $BUILD_PATH -type f -exec chmod 644 {} \;"
+    $pscpAvailable = $null -ne (Get-Command pscp -ErrorAction SilentlyContinue)
+
+    if ($FixPerms) {
+        if ($pscpAvailable) {
+            plink -ssh -l $SSH_USER $VPS_IP $permCmd
+        } else {
+            ssh "$SSH_USER@$VPS_IP" $permCmd
+        }
+
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Permissions fixed (755/644)." @SuccessColor
+        } else {
+            Write-Host "Permission fix may have failed. Check manually." @WarningColor
+        }
+    } else {
+        Write-Host "Permission fix skipped (--FixPerms:$FixPerms)" @WarningColor
+    }
+} catch {
+    Write-Host "Error fixing permissions: $_" @WarningColor
+}
+
+Write-Host "`nStep 5: Restarting Docker container..." @InfoColor
 
 try {
     $pscpAvailable = $null -ne (Get-Command pscp -ErrorAction SilentlyContinue)
@@ -129,8 +156,8 @@ try {
     Write-Host "   docker restart hello-dashboard-hello-dashboard-1" @WarningColor
 }
 
-# Step 5: Verify Deployment
-Write-Host "`nStep 5: Deployment complete!" @SuccessColor
+# Step 6: Verify Deployment
+Write-Host "`nStep 6: Deployment complete!" @SuccessColor
 Write-Host "`nVerification Commands:" @InfoColor
 Write-Host "   1. Check container status:" @InfoColor
 Write-Host "      ssh $SSH_USER@$VPS_IP" @InfoColor

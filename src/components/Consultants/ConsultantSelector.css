@@ -2,29 +2,12 @@
 .advanced-consultant-selector {
   margin: 30px 0 40px 0;
   padding: 35px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f0f4ff 100%);
-  border-radius: 20px;
-  border: 2px solid #e0e7ff;
-  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
-  overflow: visible;
   z-index: 999;
-}
-
-.advanced-consultant-selector::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #667eea, transparent);
-  animation: shimmer 3s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
 }
 
 .selector-container {
@@ -53,13 +36,12 @@
 }
 
 .selected-count {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .custom-select-wrapper {
@@ -72,8 +54,8 @@
   width: 100%;
   padding: 16px 24px;
   background: white;
-  border: 2px solid #e0e7ff;
-  border-radius: 12px;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
   font-size: 15px;
   font-weight: 600;
   color: #333;
@@ -81,37 +63,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+  transition: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 1001;
 }
 
 .custom-select-button:hover {
   border-color: #667eea;
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
-  transform: translateY(-2px);
 }
 
 .custom-select-button.open {
   border-color: #667eea;
-  background: linear-gradient(135deg, #f8fafc 0%, #f0f4ff 100%);
-  box-shadow: 0 0 30px rgba(102, 126, 234, 0.4), 0 0 60px rgba(118, 75, 162, 0.2);
-  animation: button-glow 0.6s ease-out;
-}
-
-@keyframes button-glow {
-  0% {
-    box-shadow: 0 0 0 rgba(102, 126, 234, 0.5);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(102, 126, 234, 0.6), 0 0 80px rgba(118, 75, 162, 0.3);
-  }
-  100% {
-    box-shadow: 0 0 30px rgba(102, 126, 234, 0.4), 0 0 60px rgba(118, 75, 162, 0.2);
-    transform: scale(1.02);
-  }
+  background: white;
 }
 
 .selected-name {
@@ -121,12 +85,12 @@
 
 .select-icon {
   font-size: 12px;
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
   color: #667eea;
 }
 
 .custom-select-button.open .select-icon {
-  transform: rotate(180deg) scale(1.2);
+  transform: rotate(180deg);
 }
 
 .custom-dropdown {
@@ -135,27 +99,14 @@
   transform: translateX(-50%);
   background: white;
   border: 2px solid #667eea;
-  border-radius: 12px;
-  box-shadow: 0 12px 48px rgba(102, 126, 234, 0.3), 0 0 40px rgba(102, 126, 234, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 99999;
   overflow: hidden;
-  animation: dropdown-appear 0.3s ease-out;
-  backdrop-filter: blur(10px);
   min-width: 90%;
   max-width: 600px;
   max-height: 400px;
   overflow-y: auto;
-}
-
-@keyframes dropdown-appear {
-  from {
-    opacity: 0;
-    transform: translateY(-12px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .dropdown-item {
@@ -171,33 +122,20 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.2s ease;
+  transition: none;
   border-left: 3px solid transparent;
-  animation: item-slide-in 0.4s ease-out backwards;
-}
-
-@keyframes item-slide-in {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
 }
 
 .dropdown-item:hover {
-  background: linear-gradient(90deg, #f0f4ff 0%, transparent 100%);
+  background: #f8f9fa;
   border-left-color: #667eea;
-  padding-left: 24px;
   color: #667eea;
 }
 
 .dropdown-item.active {
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
-  border-left-color: #06b6d4;
+  border-left-color: #495057;
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
   animation: item-active-glow 0.5s ease-out;
 }

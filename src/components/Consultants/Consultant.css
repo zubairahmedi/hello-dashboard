@@ -26,7 +26,7 @@
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: none;
   font-size: 14px;
 }
 
@@ -36,11 +36,9 @@
 }
 
 .time-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
-  border-color: transparent;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  border-color: #667eea;
 }
 
 /* KPI Cards */
@@ -54,15 +52,14 @@
 .kpi-card {
   background: white;
   padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-left: 5px solid #667eea;
-  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #667eea;
+  transition: none;
 }
 
 .kpi-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .kpi-card.leads {
@@ -112,10 +109,10 @@
 .status-item {
   background: white;
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 8px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-top: 4px solid #667eea;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-top: 3px solid #667eea;
 }
 
 .status-item.confirmed {
@@ -159,8 +156,8 @@
 .metric-item {
   background: white;
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -255,14 +252,14 @@
 .summary-box {
   background: white;
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   text-align: center;
-  transition: transform 0.3s;
+  transition: none;
 }
 
 .summary-box:hover {
-  transform: translateY(-3px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .summary-box h4 {
@@ -339,15 +336,14 @@
 .insight-card {
   background: white;
   padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border-left: 4px solid #667eea;
-  transition: all 0.3s;
+  transition: none;
 }
 
 .insight-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .insight-card h4 {
@@ -390,13 +386,13 @@
 .chart-container {
   background: white;
   padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: none;
 }
 
 .chart-container:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .chart-container.half-width {
@@ -560,30 +556,11 @@
 /* Consultant Header Compartment */
 .consultant-header-compartment {
   background: white;
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 40px;
   margin-bottom: 30px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-top: 4px solid #667eea;
-}
-
-/* Glowing Animation */
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 30px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(102, 126, 234, 1), 0 0 80px rgba(118, 75, 162, 0.7), inset 0 0 20px rgba(255, 255, 255, 0.4);
-  }
-}
-
-@keyframes cyan-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.6), 0 0 40px rgba(6, 182, 212, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(6, 182, 212, 0.9), 0 0 60px rgba(6, 182, 212, 0.5);
-  }
 }
 
 .header-title-section {
@@ -615,7 +592,7 @@
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: none;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -626,17 +603,12 @@
   background: #f0f4ff;
   border-color: #667eea;
   color: #667eea;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 }
 
 .time-selector-section .time-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
-  border-color: transparent;
-  box-shadow: 0 0 30px rgba(102, 126, 234, 0.8), 0 0 60px rgba(118, 75, 162, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.3);
-  transform: translateY(-3px);
-  animation: glow-pulse 2s ease-in-out infinite;
+  border-color: #667eea;
 }
 
 /* Metrics Grid */

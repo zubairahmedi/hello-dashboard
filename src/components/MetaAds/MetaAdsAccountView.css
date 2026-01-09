@@ -4,7 +4,181 @@
   padding: 20px;
 }
 
+.consultant-meta-ads-view {
+  padding: 20px;
+}
+
+/* Center tables within Consultants View and remove vertical scrollbar */
+.consultant-meta-ads-view .table-scroll {
+  overflow-y: visible; /* allow full height without cropping */
+  overflow-x: auto;    /* keep horizontal scroll for wide tables */
+  display: block;
+  max-height: none;
+}
+
+.consultant-meta-ads-view .meta-ads-table {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.consultant-meta-ads-view .meta-ads-table.subtable {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.consultant-view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e3e6f0;
+}
+
+.consultant-view-header h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.expanded-row td {
+  background: #ffffff; /* pure white to contrast group row */
+  border-top: 3px solid #ccd3e4; /* stronger separator above expansion */
+}
+
+.consultant-header {
+  margin-bottom: 24px;
+}
+
+.consultant-header h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 700;
+}
+
 /* KPI Cards */
+/* Expandable table styles */
+.expand-toggle {
+  text-align: center;
+}
+
+.expand-btn {
+  padding: 4px 8px;
+  border: 1px solid #e3e6f0;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px; /* larger caret for prominence */
+}
+
+.expand-btn.open {
+  background: #f8f9ff;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+
+
+.expanded-content {
+  padding: 12px;
+  border: 1px solid #e3e6f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.subtable th,
+.subtable td {
+  font-size: 12px;
+}
+/* Subtable row separators */
+.subtable tbody tr + tr td {
+  border-top: 1px solid #eef1f7;
+}
+
+/* Generic Meta Ads table styling (used by Consultants View) */
+.meta-ads-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: white;
+}
+
+.meta-ads-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.meta-ads-table thead th {
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.meta-ads-table thead th:last-child {
+  border-right: none;
+}
+
+.meta-ads-table td {
+  padding: 10px 12px;
+  border-top: 1px solid #e3e6f0;
+  color: #333;
+}
+
+.meta-ads-table tbody tr:hover {
+  background: #f8f9ff;
+}
+
+/* Grayish background for top-level consultant rows */
+.meta-ads-table tbody tr.consultant-row {
+  background: #eef2f7; /* stronger gray for dominance */
+}
+
+.meta-ads-table tbody tr.consultant-row td {
+  font-weight: 600;
+  border-top: 2px solid #e3e6f0;
+  border-bottom: 2px solid #e3e6f0;
+}
+
+.meta-ads-table tbody tr.consultant-row:hover {
+  background: #e9edf5; /* slightly darker on hover */
+}
+
+.meta-ads-table tbody tr.consultant-row td:first-child {
+  border-left: 4px solid #667eea; /* accent bar for grouping */
+}
+
+.meta-ads-table tbody tr.consultant-row td:nth-child(2) {
+  font-size: 14px;
+  color: #222;
+}
+
+/* Center numeric columns in summary table: from Total Contacts onward */
+.meta-ads-table tbody tr td:nth-child(n+3) {
+  text-align: center;
+}
+
+/* Subtable: center counts, keep tag left aligned */
+.meta-ads-table.subtable tbody tr td:first-child {
+  text-align: left;
+}
+.meta-ads-table.subtable tbody tr td:nth-child(n+2) {
+  text-align: center;
+}
+
+/* Expand column width consistency */
+.expand-toggle {
+  width: 40px;
+}
 .kpi-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -24,6 +198,12 @@
 /* Ensure KPI texts are white within Meta Ads view */
 .meta-ads-account-view .kpi-label,
 .meta-ads-account-view .kpi-value {
+  color: white;
+}
+
+/* Ensure KPI texts are white within Consultants view */
+.consultant-meta-ads-view .kpi-label,
+.consultant-meta-ads-view .kpi-value {
   color: white;
 }
 
@@ -513,6 +693,48 @@
   .meta-ads-details-table td {
     padding: 8px;
   }
+}
+
+/* Main View Switcher (Accounts vs Consultants) */
+.main-view-switcher {
+  display: flex;
+  gap: 16px;
+  margin: 24px auto;
+  padding: 10px;
+  background: white;
+  border-radius: 10px;
+  border: 2px solid #e3e6f0;
+  width: fit-content;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.main-view-btn {
+  padding: 12px 32px;
+  background: white;
+  border: 2px solid #e3e6f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  color: #666;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.main-view-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+  background: #f8f9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.main-view-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 /* View Mode Switcher */
