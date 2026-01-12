@@ -1,0 +1,144 @@
+.modern-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  height: 100%;
+  border: 1px solid #e2e8f0;
+}
+
+.modern-card-header {
+  margin-bottom: 1rem;
+}
+
+.modern-card-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b !important;
+  margin: 0;
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modern-card:hover .modern-card-title,
+.modern-card-header:hover .modern-card-title,
+.modern-card:hover .modern-card-header .modern-card-title {
+  color: var(--text-main) !important;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.stat-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0.25rem 0;
+}
+
+.stat-trend {
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-trend.positive {
+  color: var(--success-green);
+}
+
+.stat-trend.negative {
+  color: var(--danger-red);
+}
+
+.stat-icon-wrapper {
+  padding: 0.75rem;
+  border-radius: 50%;
+  background: #ebf8ff;
+  color: var(--primary-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon-wrapper.small {
+  padding: 0.5rem;
+}
+
+/* Top Performer Card - Compact Pill Style */
+.top-performer-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.top-performer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.top-performer-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.performer-name-pill {
+  background: #edf2f7;
+  color: #2d3748;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.performer-metric {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-accent);
+}
+
+.performer-metric-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: lowercase;
+}
+
+/* Prevent any hover color changes on card titles */
+.modern-card h3,
+.modern-card .modern-card-title,
+.modern-card-header h3 {
+  color: var(--text-main) !important;
+  transition: none !important;
+}
+
+.modern-card:hover h3,
+.modern-card:hover .modern-card-title,
+.modern-card-header:hover h3,
+.modern-card:hover .modern-card-header h3,
+.modern-card:hover .modern-card-header .modern-card-title {
+  color: var(--text-main) !important;
+  background: none !important;
+}

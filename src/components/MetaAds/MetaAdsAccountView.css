@@ -1,11 +1,11 @@
 /* Meta Ads Account View Styles */
 
 .meta-ads-account-view {
-  padding: 20px;
+  padding: 0;
 }
 
 .consultant-meta-ads-view {
-  padding: 20px;
+  padding: 0;
 }
 
 /* Center tables within Consultants View and remove vertical scrollbar */
@@ -31,15 +31,16 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 24px;
-  padding: 20px;
+  padding: 24px;
   background: white;
-  border-radius: 8px;
-  border: 1px solid #e3e6f0;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .consultant-view-header h3 {
   margin: 0 0 8px 0;
-  color: #333;
+  color: #2c5282;
   font-size: 20px;
   font-weight: 700;
 }
@@ -109,7 +110,10 @@
 }
 
 .meta-ads-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #2c5282;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .meta-ads-table thead th {
@@ -246,15 +250,15 @@
 
 .chart-wrapper {
   background: white;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #e3e6f0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .chart-wrapper h4 {
   margin: 0 0 16px 0;
-  color: #333;
+  color: #2c5282;
   font-size: 14px;
   font-weight: 600;
 }
@@ -262,17 +266,20 @@
 /* Table Section */
 .table-section {
   background: white;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #e3e6f0;
-  margin-top: 20px;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-top: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .table-section h4 {
   margin: 0 0 16px 0;
-  color: #333;
-  font-size: 14px;
-  font-weight: 600;
+  color: #2c5282;
+  font-size: 16px;
+  font-weight: 700;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .table-scroll {
@@ -288,7 +295,7 @@
 }
 
 .meta-ads-details-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #2c5282;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -307,7 +314,7 @@
 }
 
 .meta-ads-details-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #2c5282;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -381,9 +388,10 @@
 .month-comparison-section {
   background: white;
   padding: 24px;
-  border-radius: 8px;
-  border: 1px solid #e3e6f0;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
   margin-top: 30px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .comparison-header {
@@ -392,7 +400,7 @@
 
 .comparison-header h3 {
   margin: 0 0 8px 0;
-  color: #333;
+  color: #2c5282;
   font-size: 18px;
   font-weight: 700;
 }

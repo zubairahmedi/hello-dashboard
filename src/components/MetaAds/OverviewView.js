@@ -1,4 +1,7 @@
 import React from 'react';
+import { Card } from '../UI/Card';
+import '../../NewAnalytics.css';
+import './MetaAdsAccountView.css';
 // Charts removed per request. Overview now shows table only.
 
 function toNumber(val, fallback = 0) {
@@ -207,20 +210,26 @@ function OverviewView({ data }) {
   }, [yearlyAccountRows, selectedYear]);
 
   return (
-    <div className="meta-ads-account-view">
+    <div className="analytics-dashboard">
       {/* Yearly Account Summary */}
-      <div className="table-section">
-        <div className="comparison-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h4>Yearly Account Summary</h4>
-          <div>
-            <label htmlFor="overview-year-select" style={{ marginRight: 8 }}>Year:</label>
-            <select id="overview-year-select" value={selectedYear || ''} onChange={(e) => setSelectedYear(Number(e.target.value))}>
+      <Card className="chart-card wide" title={
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <span>Yearly Account Summary</span>
+          <div style={{ fontSize: '0.9rem', fontWeight: 'normal' }}>
+            <label htmlFor="overview-year-select" style={{ marginRight: 8, color: '#64748b' }}>Year:</label>
+            <select 
+              id="overview-year-select" 
+              value={selectedYear || ''} 
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #e2e8f0' }}
+            >
               {yearOptions.map((y) => (
                 <option key={y} value={y}>{y}</option>
               ))}
             </select>
           </div>
         </div>
+      }>
         <div className="table-scroll">
           <table className="meta-ads-details-table">
             <thead>
@@ -268,10 +277,9 @@ function OverviewView({ data }) {
             )}
           </table>
         </div>
-      </div>
+      </Card>
       {/* Monthly Breakdown Table */}
-      <div className="table-section">
-        <h4>Campaign Performance by Month (All Accounts)</h4>
+      <Card title="Campaign Performance by Month (All Accounts)" className="chart-card wide" style={{ marginTop: '20px' }}>
         <div className="table-scroll">
           <table className="meta-ads-details-table">
             <thead>
@@ -306,7 +314,7 @@ function OverviewView({ data }) {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

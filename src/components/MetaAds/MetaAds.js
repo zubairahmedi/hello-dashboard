@@ -292,22 +292,6 @@ function MetaAds() {
                 {dataFreshness}
               </span>
             )}
-            <button
-              className="refresh-button hard-refresh"
-              onClick={handleHardRefresh}
-              disabled={hardLoading || quickLoading}
-              title="Fetch latest aggregated data from n8n"
-            >
-              {hardLoading ? 'Fetching…' : 'Refresh Data'}
-            </button>
-            <button
-              className="refresh-button quick-refresh"
-              onClick={handleQuickUpdate}
-              disabled={hardLoading || quickLoading}
-              title="Fetch only updated rows since last update (faster)"
-            >
-              {quickLoading ? 'Updating…' : 'Quick Update'}
-            </button>
           </div>
         )}
       </div>
@@ -316,35 +300,36 @@ function MetaAds() {
       {error && <div className="meta-ads-error">{error}</div>}
 
       {/* Main View Switcher */}
-      <div className="main-view-switcher">
+      <div className="period-selector" style={{ marginBottom: '1.5rem', background: 'white', padding: '0.5rem', borderRadius: '8px', border: '1px solid #edf2f7' }}>
         <button
-          className={`main-view-btn ${mainViewMode === 'accounts' ? 'active' : ''}`}
+          className={`period-btn ${mainViewMode === 'accounts' ? 'active' : ''}`}
           onClick={() => setMainViewMode('accounts')}
         >
           Accounts View
         </button>
         <button
-          className={`main-view-btn ${mainViewMode === 'consultants' ? 'active' : ''}`}
+          className={`period-btn ${mainViewMode === 'consultants' ? 'active' : ''}`}
           onClick={() => setMainViewMode('consultants')}
         >
           Consultants View
         </button>
       </div>
 
-      <div className="meta-ads-placeholder-card">
+      <div className="meta-ads-content">
         {mainViewMode === 'accounts' ? (
           <>
-            <h3>Meta Ads Performance</h3>
-            <p>Select an account tab to view detailed metrics and charts</p>
+            <div className="dashboard-header" style={{ marginBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1.5rem', color: '#1e293b' }}>Meta Ads Performance</h3>
+            </div>
             {!mergedData && <p className="muted">No Meta Ads data loaded yet. Click "Refresh Data" to fetch.</p>}
 
         {/* Account tabs */}
-        <div className="meta-ads-filters pdf-hide">
-          <div className="meta-ads-tabs" role="tablist">
+        <div className="meta-ads-filters pdf-hide" style={{ marginBottom: '2rem' }}>
+          <div className="period-selector" role="tablist" style={{ flexWrap: 'wrap' }}>
             {ACCOUNT_TABS.map((acct) => (
               <button
                 key={acct}
-                className={`meta-ads-tab ${acct === selectedAccount ? 'active' : ''}`}
+                className={`period-btn ${acct === selectedAccount ? 'active' : ''}`}
                 onClick={() => setSelectedAccount(acct)}
               >
                 {acct}
@@ -420,14 +405,6 @@ function MetaAds() {
                   </span>
                 )}
               </div>
-              <button
-                className="refresh-button hard-refresh"
-                onClick={handleConsultantRefresh}
-                disabled={consultantLoading}
-                title="Fetch latest consultant data"
-              >
-                {consultantLoading ? 'Fetching…' : 'Refresh Consultant Data'}
-              </button>
             </div>
             <ConsultantMetaAdsView data={consultantData} />
           </>

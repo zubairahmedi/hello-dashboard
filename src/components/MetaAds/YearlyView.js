@@ -1,4 +1,7 @@
 import React, { useMemo } from 'react';
+import { DollarSign, Trophy, TrendingUp, Users, Target, Activity } from 'lucide-react';
+import { Card, StatCard } from '../UI/Card';
+import '../../NewAnalytics.css';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, Cell, PieChart, Pie
@@ -124,79 +127,62 @@ function YearlyView({ data, accountName }) {
   }
 
   return (
-    <div className="yearly-view">
-      <div className="yearly-header">
-        <h3>Yearly Performance - {accountName}</h3>
-        <p className="yearly-subtitle">Full year overview with campaign trends and comparisons</p>
+    <div className="analytics-dashboard">
+      <div className="consultant-header" style={{ marginBottom: '1.5rem' }}>
+        <h3 style={{ fontSize: '1.5rem', color: '#1e293b' }}>Yearly Performance - {accountName}</h3>
+        <p className="muted" style={{ fontSize: '0.9rem', color: '#64748b' }}>Full year overview with campaign trends and comparisons</p>
       </div>
 
       {/* Yearly KPI Cards */}
-      <div className="kpi-cards">
-        <div className="kpi-card">
-          <div className="kpi-label">Total Spend (Year)</div>
-          <div className="kpi-value">${yearlyKPIs.totalSpend}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Total Leads (Year)</div>
-          <div className="kpi-value">{yearlyKPIs.totalLeads}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Avg CPL</div>
-          <div className="kpi-value">${yearlyKPIs.avgCPL}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Total Impressions</div>
-          <div className="kpi-value">{yearlyKPIs.totalImpressions.toLocaleString()}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Total Reach</div>
-          <div className="kpi-value">{yearlyKPIs.totalReach.toLocaleString()}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Active Campaigns</div>
-          <div className="kpi-value">{yearlyKPIs.campaignCount}</div>
-        </div>
+      <div className="analytics-grid">
+        <StatCard label="Total Spend (Year)" value={`$${yearlyKPIs.totalSpend}`} icon={DollarSign} trend={0} trendLabel="invested" />
+        <StatCard label="Total Leads (Year)" value={yearlyKPIs.totalLeads} icon={Trophy} trend={0} trendLabel="generated" />
+        <StatCard label="Avg CPL" value={`$${yearlyKPIs.avgCPL}`} icon={TrendingUp} trend={0} trendLabel="average" />
+        <StatCard label="Total Impressions" value={yearlyKPIs.totalImpressions.toLocaleString()} icon={Target} trend={0} trendLabel="views" />
+        <StatCard label="Total Reach" value={yearlyKPIs.totalReach.toLocaleString()} icon={Users} trend={0} trendLabel="unique" />
+        <StatCard label="Active Campaigns" value={yearlyKPIs.campaignCount} icon={Activity} trend={0} trendLabel="running" />
       </div>
 
       {/* Monthly Timeline Charts */}
-      <div className="charts-section">
-        <div className="chart-wrapper">
-          <h4>Monthly Spend & Leads Timeline</h4>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyAggregated}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Legend />
-              <Line yAxisId="left" type="monotone" dataKey="spend" stroke="#667eea" name="Spend ($)" strokeWidth={2} />
-              <Line yAxisId="right" type="monotone" dataKey="leads" stroke="#f093fb" name="Leads" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="analytics-grid" style={{ marginBottom: 0 }}>
+        <Card title="Monthly Spend & Leads Timeline" className="chart-card">
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={monthlyAggregated}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e3e6f0" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Legend verticalAlign="top" height={36} />
+                <Line yAxisId="left" type="monotone" dataKey="spend" stroke="#667eea" name="Spend ($)" strokeWidth={2} dot={{ r: 4 }} />
+                <Line yAxisId="right" type="monotone" dataKey="leads" stroke="#f093fb" name="Leads" strokeWidth={2} dot={{ r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
 
-        <div className="chart-wrapper">
-          <h4>Monthly Impressions & Reach</h4>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyAggregated}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="impressions" fill="#667eea" name="Impressions" />
-              <Bar dataKey="reach" fill="#764ba2" name="Reach" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <Card title="Monthly Impressions & Reach" className="chart-card">
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={monthlyAggregated}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e3e6f0" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip />
+                <Legend verticalAlign="top" height={36} />
+                <Bar dataKey="impressions" fill="#667eea" name="Impressions" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="reach" fill="#764ba2" name="Reach" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
       </div>
 
       {/* Campaign Spend Distribution - Full Width */}
       {yearlyData.length > 0 && (
-        <div className="campaign-spend-distribution-section">
+        <Card title="Campaign Spend Distribution" className="chart-card wide" style={{ marginTop: '20px' }}>
           <div className="chart-wrapper">
-            <h4>Campaign Spend Distribution</h4>
             <ResponsiveContainer width="100%" height={500}>
               <PieChart>
                 <Pie
@@ -220,14 +206,13 @@ function YearlyView({ data, accountName }) {
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Campaign Leads Distribution */}
       {yearlyData.length > 0 && (
-        <div className="charts-section">
+        <Card title="Campaign Leads Distribution" className="chart-card wide" style={{ marginTop: '20px' }}>
           <div className="chart-wrapper">
-            <h4>Campaign Leads Distribution</h4>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={yearlyData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -238,7 +223,7 @@ function YearlyView({ data, accountName }) {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Campaign Trend Comparison */}
@@ -263,44 +248,46 @@ function YearlyView({ data, accountName }) {
             {/* Multi-Month Campaigns with Trend Charts */}
             {multiMonthCampaigns.length > 0 && (
               <>
-                <div className="section-header">
-                  <h4>Campaign Performance Trends (Multiple Months)</h4>
+                <div className="section-header" style={{ marginBottom: '20px' }}>
+                  <h4 style={{ fontSize: '1.2rem', color: '#1e293b' }}>Campaign Performance Trends (Multiple Months)</h4>
                 </div>
 
                 {multiMonthCampaigns.map((campaign, idx) => {
                   const campaignData = campaignTrendData[campaign];
                   return (
-                    <div key={campaign} className="campaign-trend-section">
-                      <h5>{campaign}</h5>
-                      <div className="charts-section">
-                        <div className="chart-wrapper">
-                          <h6>Spend & Leads Trend</h6>
-                          <ResponsiveContainer width="100%" height={250}>
-                            <LineChart data={campaignData}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="month" />
-                              <YAxis yAxisId="left" />
-                              <YAxis yAxisId="right" orientation="right" />
-                              <Tooltip />
-                              <Legend />
-                              <Line yAxisId="left" type="monotone" dataKey="spend" stroke={COLORS[idx % COLORS.length]} name="Spend ($)" strokeWidth={2} />
-                              <Line yAxisId="right" type="monotone" dataKey="leads" stroke={COLORS[(idx + 1) % COLORS.length]} name="Leads" strokeWidth={2} />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
+                    <div key={campaign} style={{ marginBottom: '2rem' }}>
+                      <h5 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#334155', paddingLeft: '0.5rem' }}>{campaign}</h5>
+                      <div className="analytics-grid" style={{ marginBottom: 0 }}>
+                        <Card title="Spend & Leads Trend" className="chart-card">
+                          <div className="chart-wrapper">
+                            <ResponsiveContainer width="100%" height={250}>
+                              <LineChart data={campaignData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e3e6f0" />
+                                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                                <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
+                                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
+                                <Tooltip />
+                                <Legend />
+                                <Line yAxisId="left" type="monotone" dataKey="spend" stroke={COLORS[idx % COLORS.length]} name="Spend ($)" strokeWidth={2} dot={{ r: 3 }} />
+                                <Line yAxisId="right" type="monotone" dataKey="leads" stroke={COLORS[(idx + 1) % COLORS.length]} name="Leads" strokeWidth={2} dot={{ r: 3 }} />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </Card>
 
-                        <div className="chart-wrapper">
-                          <h6>CPL Trend</h6>
-                          <ResponsiveContainer width="100%" height={250}>
-                            <LineChart data={campaignData}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="month" />
-                              <YAxis />
-                              <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                              <Line type="monotone" dataKey="cpl" stroke={COLORS[(idx + 2) % COLORS.length]} name="CPL ($)" strokeWidth={2} />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
+                        <Card title="CPL Trend" className="chart-card">
+                          <div className="chart-wrapper">
+                            <ResponsiveContainer width="100%" height={250}>
+                              <LineChart data={campaignData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e3e6f0" />
+                                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                                <YAxis tick={{ fontSize: 12 }} />
+                                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                                <Line type="monotone" dataKey="cpl" stroke={COLORS[(idx + 2) % COLORS.length]} name="CPL ($)" strokeWidth={2} dot={{ r: 3 }} />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </Card>
                       </div>
                     </div>
                   );
@@ -353,10 +340,9 @@ function YearlyView({ data, accountName }) {
       })()}
 
       {/* Monthly Breakdown Table - Single Source of Truth */}
-      <div className="table-section">
-        <h4>Campaign Performance by Month</h4>
+      <Card title="Campaign Performance by Month" className="chart-card wide" style={{ marginTop: '20px' }}>
         <div className="table-scroll">
-          <table className="meta-ads-details-table">
+          <table className="meta-ads-table">
             <thead>
               <tr>
                 <th>Campaign</th>
@@ -374,7 +360,7 @@ function YearlyView({ data, accountName }) {
             <tbody>
               {monthlyData.map((row, idx) => (
                 <tr key={idx}>
-                  <td>{row.campaignname}</td>
+                  <td style={{ fontWeight: 500 }}>{row.campaignname}</td>
                   <td>{row.month_name} {row.year}</td>
                   <td>${parseFloat(row.totalspend).toFixed(2)}</td>
                   <td>{row.totalleads}</td>
@@ -389,7 +375,7 @@ function YearlyView({ data, accountName }) {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

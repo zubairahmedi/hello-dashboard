@@ -217,13 +217,6 @@ function Sources() {
         
         <div className="sources-controls">
           <button
-            className="sources-refresh-btn"
-            onClick={handleRefresh}
-            disabled={loading}
-          >
-            {loading ? '⟳ Loading...' : '↻ Refresh'}
-          </button>
-          <button
             className="sources-export-btn"
             onClick={handleExportPDF}
             disabled={!data || loading}

@@ -1,4 +1,7 @@
 import React from 'react';
+import { Users, Calendar, Filter } from 'lucide-react';
+import { Card, StatCard } from '../UI/Card';
+import '../../NewAnalytics.css';
 import './MetaAdsAccountView.css';
 import {
   LineChart,
@@ -107,35 +110,22 @@ function ConsultantMetaAdsView({ data }) {
   }
 
   return (
-    <div className="consultant-meta-ads-view">
-      <div className="consultant-header">
-        <h3>Consultant Meta Ads Performance</h3>
-        <p className="muted">Tagged contacts by consultant and campaign over time windows</p>
+    <div className="analytics-dashboard">
+      <div className="consultant-header" style={{ marginBottom: '1.5rem' }}>
+        <h3 style={{ fontSize: '1.5rem', color: '#1e293b' }}>Consultant Meta Ads Performance</h3>
+        <p className="muted" style={{ fontSize: '0.9rem', color: '#64748b' }}>Tagged contacts by consultant and campaign over time windows</p>
       </div>
 
       {/* Summary KPIs */}
-      <div className="kpi-cards">
-        <div className="kpi-card">
-          <div className="kpi-label">Total Consultants</div>
-          <div className="kpi-value">{data.length}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Total Tagged Contacts</div>
-          <div className="kpi-value">{totals.totalContacts}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Last 90 Days</div>
-          <div className="kpi-value">{totals.totalsByWindow['90']}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Last 365 Days</div>
-          <div className="kpi-value">{totals.totalsByWindow['365']}</div>
-        </div>
+      <div className="analytics-grid kpi-row">
+        <StatCard label="Total Consultants" value={data.length} icon={Users} trend={0} trendLabel="active" />
+        <StatCard label="Total Tagged Contacts" value={totals.totalContacts} icon={Filter} trend={0} trendLabel="lifetime" />
+        <StatCard label="Last 90 Days" value={totals.totalsByWindow['90']} icon={Calendar} trend={0} trendLabel="leads" />
+        <StatCard label="Last 365 Days" value={totals.totalsByWindow['365']} icon={Calendar} trend={0} trendLabel="leads" />
       </div>
 
       {/* Leads Comparison Chart */}
-      <div className="table-section">
-        <h4>Consultant Leads by Time Window</h4>
+      <Card title="Consultant Leads by Time Window" className="chart-card wide">
         <div className="chart-wrapper">
           <ResponsiveContainer width="100%" height={360}>
             <LineChart data={chartData} margin={{ top: 12, right: 24, left: 0, bottom: 12 }}>
@@ -158,11 +148,10 @@ function ConsultantMetaAdsView({ data }) {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </Card>
 
       {/* Single Expandable Table */}
-      <div className="table-section">
-        <h4>Consultant Performance Overview</h4>
+      <Card title="Consultant Performance Overview" className="chart-card wide" style={{ marginTop: '20px' }}>
         <div className="table-scroll">
           <table className="meta-ads-table">
             <thead>
@@ -248,7 +237,7 @@ function ConsultantMetaAdsView({ data }) {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
     </div>
   );

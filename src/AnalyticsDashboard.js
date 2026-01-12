@@ -1,666 +1,445 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area, AreaChart
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  Cell,
+  PieChart,
+  Pie
 } from 'recharts';
-import { aggregateStatusByPeriod, formatStatusData } from './utils/statusAggregationService';
+import { Users, Calendar, CheckCircle, XCircle, TrendingUp, Award, Share2 } from 'lucide-react';
+import { Card, StatCard, TopPerformerCard } from './components/UI/Card';
+import ConsultantRankingTable from './components/Analytics/ConsultantRankingTable';
 import './AnalyticsDashboard.css';
+import './NewAnalytics.css';
 
-const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe'];
-const STATUS_COLORS = { showed: '#10b981', no_show: '#ef4444', confirmed: '#3b82f6', cancelled: '#06b6d4' };
+const STATUS_COLORS = {
+  showed: '#3182ce',
+  no_show: '#e53e3e',
+  confirmed: '#38a169',
+  cancelled: '#718096'
+};
 
-function AnalyticsDashboard({ data }) {
-  const [timePeriod, setTimePeriod] = useState('30d');
-  const [sortBy, setSortBy] = useState('leads');
-  const [sortOrder, setSortOrder] = useState('desc');
+const AnalyticsDashboard = ({ data }) => {
+  const [selectedPeriod, setSelectedPeriod] = useState('30d');
 
-  // Score classification for UI (used by Quality Scorecard)
-  const getScoreClass = (score) => {
-    const s = parseFloat(score) || 0;
-    if (s >= 60) return 'score-good';
-    if (s >= 30) return 'score-mid';
-    return 'score-bad';
-  };
-
-  // Time period configurations
-  // SOURCE: Consultant data (consultant-level fields)
-  // NOTE: Consultants have 365d data available; status_windows has: last7, last14, last30, last60, last150, last180, last365
+  // Time periods configuration
   const timePeriods = {
-    '7d': { label: '7 Days', consultantSuffix: '_7d' },
-    '14d': { label: '14 Days', consultantSuffix: '_14d' },
-    '30d': { label: '30 Days', consultantSuffix: '_30d' },
-    '60d': { label: '60 Days', consultantSuffix: '_60d' },
-    '150d': { label: '150 Days', consultantSuffix: '_150d' },
-    '180d': { label: '180 Days', consultantSuffix: '_180d' },
-    '365d': { label: '1 Year', consultantSuffix: '_365d' }
+    '7d': { label: '7 Days', key: 'Last 7 Days', suffix: '_7d', windowKey: 'last7' },
+    '14d': { label: '14 Days', key: 'Last 14 Days', suffix: '_14d', windowKey: 'last14' },
+    '30d': { label: '30 Days', key: 'Last 30 Days', suffix: '_30d', windowKey: 'last30' },
+    '60d': { label: '60 Days', key: 'Last 60 Days', suffix: '_60d', windowKey: 'last60' },
+    '150d': { label: '150 Days', key: 'Last 150 Days', suffix: '_150d', windowKey: 'last150' },
+    '180d': { label: '180 Days', key: 'Last 180 Days', suffix: '_180d', windowKey: 'last180' },
+    '365d': { label: '1 Year', key: 'Last 365 Days', suffix: '_365d', windowKey: 'last365' }
   };
+  
+  const currentSuffix = timePeriods[selectedPeriod].suffix;
 
-  const currentConsultantSuffix = timePeriods[timePeriod].consultantSuffix;
+  // Aggregate stats from consultant data (Single Source of Truth)
+  // This replaces the old totals logic with consultant-sum logic
+  const stats = useMemo(() => {
+    if (!data || !data.consultants) return null;
 
-  // Calculate KPIs for selected time period
-  // SOURCE OF TRUTH: Consultant sum (not data.totals)
-  const kpis = useMemo(() => {
-    // Sum leads and appointments from all consultants
     let leads = 0;
     let appointments = 0;
+    let referrals = 0;
+
     data.consultants.forEach(c => {
-      leads += Number(c[`leads${currentConsultantSuffix}`] || 0);
-      appointments += Number(c[`appointments${currentConsultantSuffix}`] || 0);
+      leads += Number(c[`leads${currentSuffix}`] || 0);
+      appointments += Number(c[`appointments${currentSuffix}`] || 0);
+      referrals += Number(c[`referrals${currentSuffix}`] || 0);
     });
+
+    const conversionRate = leads > 0 ? ((appointments / leads) * 100).toFixed(1) : 0;
+    const referralRate = appointments > 0 ? ((referrals / appointments) * 100).toFixed(1) : 0;
     
-    // Get aggregated status data for the selected time period
-    const aggregatedStatus = aggregateStatusByPeriod(data.consultants, timePeriod, appointments);
-    const formattedStatus = formatStatusData(aggregatedStatus);
+    // Status Aggregation (using status_windows)
+    // Note: This logic follows statusAggregationService patterns
+    const windowKeyMap = {
+      '7d': 'last7',
+      '14d': 'last14',
+      '30d': 'last30',
+      '60d': 'last60',
+      '150d': 'last150',
+      '180d': 'last180',
+      '365d': 'last365'
+    };
+    const windowKey = windowKeyMap[selectedPeriod];
     
-    const totalShowed = formattedStatus.showed;
-    const totalNoShow = formattedStatus.no_show;
-    let totalConfirmed = formattedStatus.confirmed;
-    const totalCancelled = formattedStatus.cancelled;
+    let showed = 0;
+    let noShow = 0;
+    let confirmed = 0;
+    let cancelled = 0;
+
+    data.consultants.forEach(c => {
+      const w = c.status_windows?.[windowKey] || {};
+      showed += Number(w.showed || 0);
+      noShow += Number(w.no_show || 0);
+      // Logic from ConsultantDetail: unrecorded appointments default to confirmed
+      const cConf = Number(w.confirmed || 0);
+      const cCanc = Number(w.cancelled || 0);
+      const cShow = Number(w.showed || 0);
+      const cNo = Number(w.no_show || 0);
+      const recorded = cConf + cCanc + cShow + cNo;
+      const cAppts = Number(c[`appointments${currentSuffix}`] || 0);
+      const unrecorded = Math.max(0, cAppts - recorded);
+      
+      confirmed += (cConf + unrecorded);
+      cancelled += cCanc;
+    });
+
+    const totalShowedAndNoShow = showed + noShow;
+    const showRate = totalShowedAndNoShow > 0 ? ((showed / totalShowedAndNoShow) * 100).toFixed(1) : 0;
+
+    // Calculate Top Performers
+    const consultants = [...data.consultants];
     
-    // Any unrecorded appointments are treated as confirmed
-    const recordedStatuses = totalShowed + totalNoShow + totalConfirmed + totalCancelled;
-    const unrecordedAppts = Math.max(0, appointments - recordedStatuses);
-    totalConfirmed = totalConfirmed + unrecordedAppts;
-    const totalPending = 0; // No pending - all appointments have a status
-    
-    // Show Rate = Showed Appointments / Total Appointments
-    const showRate = appointments > 0 ? ((totalShowed / appointments) * 100).toFixed(1) : '0.0';
-    const conversionRate = leads > 0 ? ((appointments / leads) * 100).toFixed(1) : '0.0';
-    const confirmedRate = appointments > 0 ? ((totalConfirmed / appointments) * 100).toFixed(1) : '0.0';
+    // Top Lead Volume
+    const topLeadsConsultant = [...consultants].sort((a, b) => 
+      Number(b[`leads${currentSuffix}`] || 0) - Number(a[`leads${currentSuffix}`] || 0)
+    )[0];
+
+    // Top Appointments
+    const topApptsConsultant = [...consultants].sort((a, b) => 
+      Number(b[`appointments${currentSuffix}`] || 0) - Number(a[`appointments${currentSuffix}`] || 0)
+    )[0];
+
+    // Top Conversion (minimum 10 leads to be significant)
+    const topConvConsultant = [...consultants]
+      .filter(c => Number(c[`leads${currentSuffix}`] || 0) >= 10)
+      .sort((a, b) => {
+        const rateA = (Number(a[`appointments${currentSuffix}`] || 0) / Number(a[`leads${currentSuffix}`] || 0));
+        const rateB = (Number(b[`appointments${currentSuffix}`] || 0) / Number(b[`leads${currentSuffix}`] || 0));
+        return rateB - rateA;
+      })[0];
 
     return {
       leads,
       appointments,
-      showRate,
+      referrals,
       conversionRate,
-      confirmedRate,
-      totalShowed,
-      totalNoShow,
-      totalConfirmed,
-      totalCancelled,
-      totalPending,
-      formattedStatus
+      referralRate,
+      showRate,
+      showed,
+      noShow,
+      confirmed,
+      cancelled,
+      totalStatus: showed + noShow + confirmed + cancelled,
+      topPerformers: {
+        leads: topLeadsConsultant,
+        appointments: topApptsConsultant,
+        conversion: topConvConsultant
+      }
     };
-  }, [data, currentConsultantSuffix, timePeriod]);
+  }, [data, currentSuffix, selectedPeriod]);
 
-  // Prepare consultant data for selected time period
-  const consultantData = useMemo(() => {
-    return data.consultants.map(c => {
-      const leads = Number(c[`leads${currentConsultantSuffix}`] || 0);
-      const appointments = Number(c[`appointments${currentConsultantSuffix}`] || 0);
-      const referrals = Number(c[`referrals${currentConsultantSuffix}`] || 0);
-      
-      // Get period-specific status from status_windows
-      const windowKey = 
-        timePeriod === '7d' ? 'last7' :
-        timePeriod === '14d' ? 'last14' :
-        timePeriod === '30d' ? 'last30' :
-        timePeriod === '60d' ? 'last60' :
-        timePeriod === '150d' ? 'last150' :
-        timePeriod === '180d' ? 'last180' :
-        'last365';
-      
-      const statusWindow = c.status_windows?.[windowKey] || {};
-      const showed = Number(statusWindow.showed || 0);
-      const noShow = Number(statusWindow.no_show || 0);
-      let confirmed = Number(statusWindow.confirmed || 0);
-      const cancelled = Number(statusWindow.cancelled || 0);
-      
-      // Any unrecorded appointments are treated as confirmed (default status)
-      const recordedStatuses = showed + noShow + confirmed + cancelled;
-      const unrecorded = Math.max(0, appointments - recordedStatuses);
-      confirmed = confirmed + unrecorded;
-      
-      return {
-        name: c.name,
-        leads,
-        appointments,
-        referrals,
-        showed,
-        noShow,
-        confirmed,
-        cancelled,
-        conversionRate: leads > 0 ? ((appointments / leads) * 100).toFixed(1) : '0.0',
-        showRate: appointments > 0 ? ((showed / appointments) * 100).toFixed(1) : '0.0',
-        avgLeadToAppt: (c.lead_to_appt_ratio || 0).toFixed(1)
-      };
-    });
-  }, [data, currentConsultantSuffix, timePeriod]);
-
-  // Sort consultant data
-  const sortedConsultants = useMemo(() => {
-    const sorted = [...consultantData].sort((a, b) => {
-      const aVal = parseFloat(a[sortBy]) || 0;
-      const bVal = parseFloat(b[sortBy]) || 0;
-      return sortOrder === 'desc' ? bVal - aVal : aVal - bVal;
-    });
-    return sorted;
-  }, [consultantData, sortBy, sortOrder]);
-
-  // Top performers
-  const topPerformers = useMemo(() => {
-    const byLeads = [...consultantData].sort((a, b) => b.leads - a.leads)[0];
-    const byAppointments = [...consultantData].sort((a, b) => b.appointments - a.appointments)[0];
-    const byConversion = [...consultantData].sort((a, b) => parseFloat(b.conversionRate) - parseFloat(a.conversionRate))[0];
-    const byReferrals = [...consultantData].sort((a, b) => b.referrals - a.referrals)[0];
-
-    return { byLeads, byAppointments, byConversion, byReferrals };
-  }, [consultantData]);
-
-  // Chart data for trends - using consultant sum for consistency
-  const trendData = useMemo(() => {
-    const periods = [
-      { key: '_7d', label: '7D' },
-      { key: '_14d', label: '14D' },
-      { key: '_30d', label: '30D' },
-      { key: '_60d', label: '60D' },
-      { key: '_150d', label: '150D' },
-      { key: '_180d', label: '180D' },
-      { key: '_365d', label: '1Y' }
-    ];
+  // Chart Data Preparation
+  const chartData = useMemo(() => {
+    if (!stats) return [];
     
+    return [
+      { name: 'Showed', value: stats.showed, color: STATUS_COLORS.showed },
+      { name: 'No Show', value: stats.no_show, color: STATUS_COLORS.no_show },
+      { name: 'Confirmed', value: stats.confirmed, color: STATUS_COLORS.confirmed },
+      { name: 'Cancelled', value: stats.cancelled, color: STATUS_COLORS.cancelled }
+    ];
+  }, [stats]);
+  
+  // Trend Mock Data (since we don't have historical snapshots in main webhook)
+  // We use the periods array to simulate a "trend" view over time
+  // This is smarter than random data - it uses the actual 7d/14d/30d aggregations
+  const trendData = useMemo(() => {
+    if(!data || !data.consultants) return [];
+
+    const periods = [
+        { key: '7d', label: '7D' },
+        { key: '14d', label: '14D' },
+        { key: '30d', label: '30D' },
+        { key: '60d', label: '60D' },
+        { key: '150d', label: '150D' },
+        { key: '180d', label: '180D' },
+        { key: '365d', label: '1Y' }
+    ];
+
     return periods.map(p => {
-      let leads = 0;
-      let appointments = 0;
-      data.consultants.forEach(c => {
-        leads += Number(c[`leads${p.key}`] || 0);
-        appointments += Number(c[`appointments${p.key}`] || 0);
-      });
-      return { period: p.label, leads, appointments };
+        let leads = 0;
+        let appointments = 0;
+        const s = timePeriods[p.key].suffix;
+        data.consultants.forEach(c => {
+            leads += Number(c[`leads${s}`] || 0);
+            appointments += Number(c[`appointments${s}`] || 0);
+        });
+        return { name: p.label, leads, appointments };
     });
   }, [data]);
 
-  // Pie chart data for appointment status (using aggregated period data)
-  const appointmentStatusData = useMemo(() => [
-    { name: 'Showed', value: kpis.totalShowed },
-    { name: 'No Show', value: kpis.totalNoShow },
-    { name: 'Confirmed', value: kpis.totalConfirmed },
-    { name: 'Cancelled', value: kpis.totalCancelled }
-  ], [kpis]);
 
-  // 🔻 CONVERSION FUNNEL DATA
-  const funnelData = useMemo(() => {
-    const leads = kpis.leads;
-    const appointments = kpis.appointments;
-    const showed = kpis.totalShowed;
-    const confirmed = kpis.totalConfirmed;
-    
-    return [
-      { stage: 'Leads', value: leads, pct: 100 },
-      { stage: 'Appointments', value: appointments, pct: leads > 0 ? ((appointments / leads) * 100).toFixed(1) : 0 },
-      { stage: 'Showed', value: showed, pct: appointments > 0 ? ((showed / appointments) * 100).toFixed(1) : 0 },
-      { stage: 'Confirmed', value: confirmed, pct: showed > 0 ? ((confirmed / showed) * 100).toFixed(1) : 0 },
-      { stage: 'Cancelled', value: kpis.totalCancelled, color: '#06b6d4' }
-    ];
-  }, [kpis]);
-
-  // 📞 REFERRAL PERFORMANCE
-  const referralStats = useMemo(() => {
-    const totalReferrals = consultantData.reduce((sum, c) => sum + c.referrals, 0);
-    const totalLeads = kpis.leads;
-    const referralRate = totalLeads > 0 ? ((totalReferrals / totalLeads) * 100).toFixed(1) : '0.0';
-    const topReferrer = [...consultantData].sort((a, b) => b.referrals - a.referrals)[0];
-    
-    return { totalReferrals, referralRate, topReferrer };
-  }, [consultantData, kpis]);
-
-  // ⚠️ NO-SHOW ANALYSIS
-  const noShowAnalysis = useMemo(() => {
-    // No-show rate = No-shows / Total Appointments
-    const noShowRate = kpis.appointments > 0 
-      ? ((kpis.totalNoShow / kpis.appointments) * 100).toFixed(1) 
-      : '0.0';
-    const consultantNoShowRates = consultantData.map(c => ({
-      name: c.name,
-      rate: c.appointments > 0 ? ((c.noShow / c.appointments) * 100).toFixed(1) : '0.0'
-    }));
-    
-    return { noShowRate, consultantNoShowRates };
-  }, [consultantData, kpis]);
-
-  // 🔥 CONSULTANT PERFORMANCE HEATMAP DATA
-  const heatmapData = useMemo(() => {
-    return consultantData.map(c => ({
-      name: c.name,
-      leads: c.leads,
-      appointments: c.appointments,
-      conversion: parseFloat(c.conversionRate),
-      showRate: parseFloat(c.showRate),
-      referrals: c.referrals
-    }));
-  }, [consultantData]);
-
-  // 📊 CONSULTANT RANKING
-  const consultantRanking = useMemo(() => {
-    return [...consultantData]
-      .sort((a, b) => b.leads - a.leads)
-      .slice(0, 4)
-      .map((c, idx) => ({
-        rank: idx + 1,
-        name: c.name,
-        leads: c.leads,
-        appointments: c.appointments,
-        conversion: c.conversionRate,
-        trend: (idx % 2 === 0) ? '↑' : '↓'
-      }));
-  }, [consultantData]);
-
-  // 💧 STATUS WATERFALL
-  const waterfallData = useMemo(() => [
-    { stage: 'Confirmed', count: kpis.totalConfirmed, color: '#3b82f6' },
-    { stage: 'Showed', count: kpis.totalShowed, color: '#10b981' },
-    { stage: 'No Show', count: kpis.totalNoShow, color: '#ef4444' },
-    { stage: 'Cancelled', count: kpis.totalCancelled, color: '#06b6d4' }
-  ], [kpis]);
-
-  // ⭐ QUALITY SCORECARD
-  const qualityScores = useMemo(() => {
-    const leadQuality = parseFloat(kpis.conversionRate) || 0;
-    const appointmentQuality = parseFloat(kpis.showRate) || 0;
-    const salesQuality = parseFloat(kpis.confirmedRate) || 0;
-    const overallScore = ((leadQuality + appointmentQuality + salesQuality) / 3).toFixed(1);
-    
-    return { leadQuality, appointmentQuality, salesQuality, overallScore };
-  }, [kpis]);
-
-  const handleSort = (field) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
-    } else {
-      setSortBy(field);
-      setSortOrder('desc');
-    }
-  };
+  if (!data || !stats) return <div className="loading-state">Loading Analytics...</div>;
 
   return (
     <div className="analytics-dashboard">
-      {/* Time Period Selector */}
-      <div className="time-selector">
-        {Object.entries(timePeriods).map(([key, { label }]) => (
+      <div className="period-selector">
+        {Object.entries(timePeriods).map(([key, config]) => (
           <button
             key={key}
-            className={`time-btn ${timePeriod === key ? 'active' : ''}`}
-            onClick={() => setTimePeriod(key)}
+            className={`period-btn ${selectedPeriod === key ? 'active' : ''}`}
+            onClick={() => setSelectedPeriod(key)}
           >
-            {label}
+            {config.label}
           </button>
         ))}
       </div>
 
-      {/* Executive KPI Cards */}
-      <div className="kpi-grid">
-        <div className="kpi-card leads">
-          <div className="kpi-icon"></div>
-          <div className="kpi-content">
-            <div className="kpi-label">Total Leads</div>
-            <div className="kpi-value">{kpis.leads.toLocaleString()}</div>
-            <div className="kpi-subtitle">{timePeriods[timePeriod].label}</div>
-          </div>
-        </div>
-
-        <div className="kpi-card appointments">
-          <div className="kpi-icon"></div>
-          <div className="kpi-content">
-            <div className="kpi-label">Appointments</div>
-            <div className="kpi-value">{kpis.appointments.toLocaleString()}</div>
-            <div className="kpi-subtitle">{timePeriods[timePeriod].label}</div>
-          </div>
-        </div>
-
-        <div className="kpi-card conversion">
-          <div className="kpi-icon"></div>
-          <div className="kpi-content">
-            <div className="kpi-label">Conversion Rate</div>
-            <div className="kpi-value">{kpis.conversionRate}%</div>
-            <div className="kpi-subtitle">Lead → Appointment</div>
-          </div>
-        </div>
-
-        <div className="kpi-card show-rate">
-          <div className="kpi-icon"></div>
-          <div className="kpi-content">
-            <div className="kpi-label">Show Rate</div>
-            <div className="kpi-value">{kpis.showRate}%</div>
-            <div className="kpi-subtitle">{kpis.totalShowed} showed</div>
-          </div>
-        </div>
+      {/* KPI Row */}
+      <div className="analytics-grid kpi-row">
+        <StatCard 
+          label="Total Leads" 
+          value={stats.leads.toLocaleString()} 
+          trend={0} 
+          trendLabel="total"
+          icon={Users} 
+        />
+        <StatCard 
+          label="Appointments" 
+          value={stats.appointments.toLocaleString()} 
+          trend={0} 
+          trendLabel="total"
+          icon={Calendar} 
+        />
+        <StatCard 
+          label="Conversion Rate" 
+          value={`${stats.conversionRate}%`} 
+          trend={0} 
+          trendLabel="avg"
+          icon={TrendingUp} 
+        />
+        <StatCard 
+          label="Confirmed" 
+          value={stats.confirmed.toLocaleString()} 
+          trend={0} 
+          trendLabel="upcoming"
+          icon={CheckCircle} 
+        />
       </div>
 
-      {/* Top Performers Section */}
-      <div className="top-performers">
-        <h2>Top Performers - {timePeriods[timePeriod].label}</h2>
-        <div className="performers-grid">
-          <div className="performer-card">
-            <div className="performer-title">Most Leads</div>
-            <div className="performer-name">{topPerformers.byLeads.name}</div>
-            <div className="performer-value">{topPerformers.byLeads.leads} leads</div>
-          </div>
-          <div className="performer-card">
-            <div className="performer-title">Most Appointments</div>
-            <div className="performer-name">{topPerformers.byAppointments.name}</div>
-            <div className="performer-value">{topPerformers.byAppointments.appointments} appointments</div>
-          </div>
-          <div className="performer-card">
-            <div className="performer-title">Best Conversion</div>
-            <div className="performer-name">{topPerformers.byConversion.name}</div>
-            <div className="performer-value">{topPerformers.byConversion.conversionRate}%</div>
-          </div>
-          <div className="performer-card">
-            <div className="performer-title">Most Referrals</div>
-            <div className="performer-name">{topPerformers.byReferrals.name}</div>
-            <div className="performer-value">{topPerformers.byReferrals.referrals} referrals</div>
-          </div>
-        </div>
+      {/* Top Performers Row */}
+      <div className="analytics-grid" style={{ marginBottom: '2rem' }}>
+        <TopPerformerCard 
+          label="Top Lead Volume" 
+          name={stats.topPerformers.leads?.name || 'N/A'} 
+          metric={Number(stats.topPerformers.leads?.[`leads${currentSuffix}`] || 0)} 
+          metricLabel="leads"
+          icon={Users} 
+        />
+        <TopPerformerCard 
+          label="Top Appointments" 
+          name={stats.topPerformers.appointments?.name || 'N/A'} 
+          metric={Number(stats.topPerformers.appointments?.[`appointments${currentSuffix}`] || 0)} 
+          metricLabel="appts"
+          icon={Calendar} 
+        />
+        <TopPerformerCard 
+          label="Top Conversion" 
+          name={stats.topPerformers.conversion?.name || 'N/A'} 
+          metric={stats.topPerformers.conversion ? 
+            `${((Number(stats.topPerformers.conversion[`appointments${currentSuffix}`] || 0) / 
+            Number(stats.topPerformers.conversion[`leads${currentSuffix}`] || 0)) * 100).toFixed(1)}%` : '0%'} 
+          metricLabel="rate"
+          icon={TrendingUp} 
+        />
+        <TopPerformerCard 
+          label="Best Show Rate" 
+          name={(() => {
+            const bestShow = [...data.consultants]
+              .filter(c => {
+                const w = c.status_windows?.[timePeriods[selectedPeriod].windowKey] || {};
+                return (Number(w.showed || 0) + Number(w.no_show || 0)) >= 5;
+              })
+              .sort((a, b) => {
+                const wA = a.status_windows?.[timePeriods[selectedPeriod].windowKey] || {};
+                const wB = b.status_windows?.[timePeriods[selectedPeriod].windowKey] || {};
+                const rA = Number(wA.showed || 0) / (Number(wA.showed || 0) + Number(wA.no_show || 0));
+                const rB = Number(wB.showed || 0) / (Number(wB.showed || 0) + Number(wB.no_show || 0));
+                return rB - rA;
+              })[0];
+            return bestShow?.name || 'N/A';
+          })()} 
+          metric={(() => {
+            const bestShow = [...data.consultants]
+              .filter(c => {
+                const w = c.status_windows?.[timePeriods[selectedPeriod].windowKey] || {};
+                return (Number(w.showed || 0) + Number(w.no_show || 0)) >= 5;
+              })
+              .sort((a, b) => {
+                const wA = a.status_windows?.[timePeriods[selectedPeriod].windowKey] || {};
+                const wB = b.status_windows?.[timePeriods[selectedPeriod].windowKey] || {};
+                const rA = Number(wA.showed || 0) / (Number(wA.showed || 0) + Number(wA.no_show || 0));
+                const rB = Number(wB.showed || 0) / (Number(wB.showed || 0) + Number(wB.no_show || 0));
+                return rB - rA;
+              })[0];
+            if (!bestShow) return '0%';
+            const w = bestShow.status_windows?.[timePeriods[selectedPeriod].windowKey] || {};
+            return `${((Number(w.showed || 0) / (Number(w.showed || 0) + Number(w.no_show || 0))) * 100).toFixed(1)}%`;
+          })()} 
+          metricLabel="rate"
+          icon={Award} 
+        />
       </div>
 
-      {/* NEW: Quality Scorecard */}
-      <div className="quality-scorecard">
-        <h2>Quality Scorecard</h2>
+      {/* Quality Scorecard */}
+      <div className="quality-scorecard" style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+          <Award size={28} />
+          <h2 style={{ margin: 0 }}>Team Quality Scorecard</h2>
+        </div>
         <div className="scorecard-grid">
-          <div className="score-item">
-            <div className="score-label">Lead Quality</div>
-            <div className={`score-value ${getScoreClass(qualityScores.leadQuality)}`}>
-              {qualityScores.leadQuality.toFixed(1)}%
-            </div>
-            <div className="score-subtitle">Lead to Appt Rate</div>
-          </div>
-          <div className="score-item">
-            <div className="score-label">Appointment Quality</div>
-            <div className={`score-value ${getScoreClass(qualityScores.appointmentQuality)}`}>
-              {qualityScores.appointmentQuality.toFixed(1)}%
-            </div>
-            <div className="score-subtitle">Show Rate</div>
-          </div>
-          <div className="score-item">
-            <div className="score-label">Sales Quality</div>
-            <div className={`score-value ${getScoreClass(qualityScores.salesQuality)}`}>
-              {qualityScores.salesQuality.toFixed(1)}%
-            </div>
-            <div className="score-subtitle">Confirmed Rate</div>
-          </div>
           <div className="score-item overall">
-            <div className="score-label">Overall Score</div>
-            <div className="score-value-large">{qualityScores.overallScore}</div>
-            <div className="score-subtitle">Composite</div>
+            <span className="score-label">Overall Show Rate</span>
+            <span className="score-value-large">{stats.showRate}%</span>
+            <span className="score-subtitle">of total appointments</span>
+          </div>
+          <div className="score-item">
+            <span className="score-label">Appointment Rate</span>
+            <div className="score-value">{stats.conversionRate}%</div>
+            <span className="score-subtitle">Lead to Appointment</span>
+          </div>
+          <div className="score-item">
+            <span className="score-label">Confirmation Stability</span>
+            <div className="score-value">
+              {stats.appointments > 0 
+                ? (((stats.confirmed + stats.showed) / stats.appointments) * 100).toFixed(1) 
+                : 0}%
+            </div>
+            <span className="score-subtitle">Confirmed or Showed</span>
+          </div>
+          <div className="score-item">
+            <span className="score-label">Cancel Rate</span>
+            <div className="score-value" style={{ color: '#e53e3e' }}>
+              {stats.appointments > 0 ? ((stats.cancelled / stats.appointments) * 100).toFixed(1) : 0}%
+            </div>
+            <span className="score-subtitle">of total appointments</span>
           </div>
         </div>
       </div>
 
-      {/* NEW: Referral Performance */}
-      <div className="referral-section">
-        <h2>Referral Performance</h2>
-        <div className="referral-stats">
-          <div className="referral-card">
-            <div className="referral-title">Total Referrals</div>
-            <div className="referral-value">{referralStats.totalReferrals}</div>
-          </div>
-          <div className="referral-card">
-            <div className="referral-title">Top Referrer</div>
-            <div className="referral-value">{referralStats.topReferrer?.name}</div>
-            <div className="referral-rate">{referralStats.topReferrer?.referrals} referrals</div>
-          </div>
-        </div>
-      </div>
-
-      {/* NEW: No-Show Analysis */}
-      <div className="noshow-section">
-        <h2>No-Show Analysis</h2>
-        <div className="noshow-alert">
-          <div className="alert-title">Overall No-Show Rate</div>
-          <div className={`alert-value ${parseFloat(noShowAnalysis.noShowRate) > 30 ? 'high' : 'ok'}`}>
-            {noShowAnalysis.noShowRate}%
-          </div>
-          {parseFloat(noShowAnalysis.noShowRate) > 30 && (
-            <div className="alert-warning">High no-show rate detected</div>
-          )}
-        </div>
-        <div className="noshow-table">
-          <h4>No-Show Rate by Consultant</h4>
-          {noShowAnalysis.consultantNoShowRates.map((item, idx) => (
-            <div key={idx} className="noshow-row">
-              <span className="noshow-name">{item.name}</span>
-              <span className={`noshow-rate ${parseFloat(item.rate) > 30 ? 'high' : 'ok'}`}>
-                {item.rate}%
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* NEW: Conversion Funnel */}
-      <div className="funnel-section">
-        <h2>Conversion Funnel</h2>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={funnelData} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" stroke="#0F172A22" />
-            <XAxis type="number" stroke="#0F172A" tick={{ fill: '#0F172A', fontWeight: 600 }} />
-            <YAxis dataKey="stage" type="category" width={100} stroke="#0F172A" tick={{ fill: '#0F172A', fontWeight: 600 }} />
-            <Tooltip formatter={(value) => value.toLocaleString()} contentStyle={{ background: '#111827', color: '#fff', border: 'none' }} itemStyle={{ color: '#fff' }} cursor={{ fill: '#0066cc22' }} />
-            <Bar dataKey="value" fill="#0066cc" radius={[6, 6, 6, 6]} />
-          </BarChart>
-        </ResponsiveContainer>
-        <div className="funnel-stats">
-          {funnelData.map((stage, idx) => (
-            <div key={idx} className="funnel-stat funnel-blue">
-              <span>{stage.stage}:</span>
-              <strong>{stage.value.toLocaleString()}</strong>
-              <span className="funnel-pct">({stage.pct}%)</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* NEW: Consultant Performance Heatmap */}
-      <div className="heatmap-section">
-        <h2>Consultant Performance Heatmap</h2>
-        <div className="heatmap-grid">
-          {heatmapData.map((consultant, idx) => (
-            <div key={idx} className="heatmap-cell">
-              <div className="heatmap-name">{consultant.name}</div>
-              <div className="heatmap-metrics">
-                <div className="metric-badge leads">
-                  Leads: {consultant.leads}
-                </div>
-                <div className="metric-badge appts">
-                  Appts: {consultant.appointments}
-                </div>
-                <div className="metric-badge conversion">
-                  Conv: {consultant.conversion}%
-                </div>
-                <div className="metric-badge show">
-                  Show: {consultant.showRate}%
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* NEW: Consultant Ranking */}
-      <div className="ranking-section">
-        <h2>Top Performers This Period</h2>
-        <div className="ranking-cards">
-          {consultantRanking.map((consultant) => (
-            <div key={consultant.rank} className="ranking-card">
-              <div className="ranking-badge">#{consultant.rank}</div>
-              <div className="ranking-name">{consultant.name}</div>
-              <div className="ranking-trend">{consultant.trend}</div>
-              <div className="ranking-stats">
-                <div>{consultant.leads} leads</div>
-                <div>{consultant.appointments} appts</div>
-                <div>{consultant.conversion}% conversion</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* NEW: Status Waterfall */}
-      <div className="waterfall-section">
-        <h2>💧 Appointment Status Waterfall</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={waterfallData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="stage" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="count" fill="#8884d8">
-              {waterfallData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Charts Section */}
-
-      <div className="charts-section">
-        <div className="chart-container">
-          <h3>📊 Leads by Consultant</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={sortedConsultants}>
-              <CartesianGrid strokeDasharray="3 3" />
+      {/* Charts Grid */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Row 1: Traffic Overview (full width) */}
+        <Card title="Traffic Overview (Trends)" className="chart-card">
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3182ce" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#3182ce" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorAppts" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#38a169" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#38a169" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
               <XAxis dataKey="name" />
               <YAxis />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="leads" fill="#667eea" />
-            </BarChart>
+              <Area type="monotone" dataKey="leads" stroke="#3182ce" fillOpacity={1} fill="url(#colorLeads)" />
+              <Area type="monotone" dataKey="appointments" stroke="#38a169" fillOpacity={1} fill="url(#colorAppts)" />
+            </AreaChart>
           </ResponsiveContainer>
-        </div>
+        </Card>
 
-        <div className="chart-container">
-          <h3>📅 Appointments by Consultant</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={sortedConsultants}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="appointments" fill="#764ba2" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="chart-container full-width">
-          <h3>📈 Cumulative Growth Trend</h3>
-          <ResponsiveContainer width="100%" height={350}>
-            <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="period" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="leads" stroke="#667eea" strokeWidth={3} />
-              <Line type="monotone" dataKey="appointments" stroke="#764ba2" strokeWidth={3} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Centered Appointment Status Breakdown Chart */}
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '40px 0' }}>
-        <div className="chart-container" style={{ width: 600, maxWidth: '100%' }}>
-          <h3 style={{ textAlign: 'center' }}>🎯 Appointment Status Breakdown</h3>
-          <ResponsiveContainer width={500} height={400}>
-            <PieChart>
-              <Pie
-                data={appointmentStatusData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                outerRadius={140}
-                fill="#8884d8"
-                dataKey="value"
+        {/* Row 2: Conversion Funnel (60%) + Lead Quality (40%) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '24px' }}>
+          {/* Conversion Funnel - Left side (60%) */}
+          <Card title="Conversion Funnel" className="chart-card">
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart
+                layout="vertical"
+                data={[
+                  { name: 'Leads', value: stats.leads, fill: '#3182ce' },
+                  { name: 'Appointments', value: stats.appointments, fill: '#4299e1' },
+                  { name: 'Confirmed', value: stats.confirmed, fill: '#38a169' },
+                  { name: 'Showed', value: stats.showed, fill: '#2b6cb0' },
+                ]}
+                margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
               >
-                {appointmentStatusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                <XAxis type="number" />
+                <YAxis dataKey="name" type="category" />
+                <Tooltip />
+                <Bar dataKey="value" barSize={24} radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
 
-      {/* Detailed Consultant Table */}
-      <div className="consultant-table-section">
-        <h2>👥 Consultant Performance Details - {timePeriods[timePeriod].label}</h2>
-        <div className="table-container">
-          <table className="consultant-table">
-            <thead>
-              <tr>
-                <th onClick={() => handleSort('name')}>
-                  Name {sortBy === 'name' && (sortOrder === 'desc' ? '↓' : '↑')}
-                </th>
-                <th onClick={() => handleSort('leads')}>
-                  Leads {sortBy === 'leads' && (sortOrder === 'desc' ? '↓' : '↑')}
-                </th>
-                <th onClick={() => handleSort('appointments')}>
-                  Appointments {sortBy === 'appointments' && (sortOrder === 'desc' ? '↓' : '↑')}
-                </th>
-                <th onClick={() => handleSort('referrals')}>
-                  Referrals {sortBy === 'referrals' && (sortOrder === 'desc' ? '↓' : '↑')}
-                </th>
-                <th onClick={() => handleSort('conversionRate')}>
-                  Conversion % {sortBy === 'conversionRate' && (sortOrder === 'desc' ? '↓' : '↑')}
-                </th>
-                <th onClick={() => handleSort('showRate')}>
-                  Show Rate % {sortBy === 'showRate' && (sortOrder === 'desc' ? '↓' : '↑')}
-                </th>
-                <th>Showed</th>
-                <th>No Show</th>
-                <th>Confirmed</th>
-                <th>Cancelled</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedConsultants.map((consultant, index) => (
-                <tr key={index} className={index % 2 === 0 ? 'even' : 'odd'}>
-                  <td className="consultant-name">{consultant.name}</td>
-                  <td className="metric">{consultant.leads}</td>
-                  <td className="metric">{consultant.appointments}</td>
-                  <td className="metric">{consultant.referrals}</td>
-                  <td className="metric highlight">{consultant.conversionRate}%</td>
-                  <td className="metric highlight">{consultant.showRate}%</td>
-                  <td className="metric success">{consultant.showed}</td>
-                  <td className="metric danger">{consultant.noShow}</td>
-                  <td className="metric">{consultant.confirmed}</td>
-                  <td className="metric">{consultant.cancelled}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* Lead Quality - Right side (40%) */}
+          <Card title={`Lead Quality (${timePeriods[selectedPeriod].label})`} className="chart-card">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Appointment Status Donut */}
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                  Appointment Status
+                </div>
+                <ResponsiveContainer width="100%" height={160}>
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={55}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend verticalAlign="bottom" height={30} wrapperStyle={{ fontSize: '10px' }}/>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              
+              {/* Referral Performance - Compact */}
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                  Referrals
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: 1, background: '#f8fafc', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #3182ce' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Total</div>
+                    <div style={{ fontSize: '20px', fontWeight: 800, color: '#2c5282' }}>{stats.referrals}</div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>{stats.referralRate}% of appts</div>
+                  </div>
+                  <div style={{ flex: 1, background: '#f0fff4', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #38a169' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Avg/Consultant</div>
+                    <div style={{ fontSize: '20px', fontWeight: 800, color: '#276749' }}>{(stats.referrals > 0 ? (stats.referrals / data.consultants.length).toFixed(1) : 0)}</div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>efficiency</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
-
-      {/* Summary Stats */}
-      <div className="summary-stats">
-        <h2>📋 Overall Statistics</h2>
-        <div className="stats-grid">
-          <div className="stat-item">
-            <span className="stat-label">Total Showed:</span>
-            <span className="stat-value success">{kpis.totalShowed}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Total No-Show:</span>
-            <span className="stat-value danger">{kpis.totalNoShow}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Total Confirmed:</span>
-            <span className="stat-value">{kpis.totalConfirmed}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Total Cancelled:</span>
-            <span className="stat-value">{kpis.totalCancelled}</span>
-          </div>
-        </div>
-      </div>
+      
+      <ConsultantRankingTable 
+        data={data}
+        period={timePeriods[selectedPeriod]}
+        consultants={data.consultants || []}
+      />
     </div>
   );
-}
+};
 
 export default AnalyticsDashboard;
