@@ -5,7 +5,7 @@ import {
   XAxis, YAxis, Tooltip, Legend, CartesianGrid, ComposedChart, PieChart, Pie, Cell,
   Tooltip as RechartsTooltip
 } from 'recharts';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Sparkles, ArrowRight, TrendingUp, TrendingDown } from 'lucide-react';
 import './Consultant.css';
 // ⚠️ SEPARATE MONTHLY WEBHOOK SERVICE - DO NOT TOUCH MAIN DASHBOARD DATA
 import { fetchMonthlyPerformance, analyzeBestWorstMonths } from '../../utils/monthlyPerformanceService';
@@ -440,7 +440,7 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
       {/* ROW 2: Three equal charts (33% each) */}
       <div className="breakdowns-row">
         {/* 6-Month Performance */}
-        <Card title="6-Month Performance" className="chart-card">
+        <Card title="6-Month Performance" className="chart-card" style={{ minHeight: '420px' }}>
           <div className="chart-content">
             <p className="chart-description" style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>180-day avg vs current 30-day.</p>
             <ResponsiveContainer width="100%" height={200}>
@@ -501,7 +501,7 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
         </Card>
 
         {/* Status Breakdown Pie Chart */}
-        <Card title="Status Distribution" className="chart-card">
+        <Card title="Status Distribution" className="chart-card" style={{ minHeight: '420px' }}>
           <div className="chart-content">
             <p className="chart-description" style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Appointment outcomes breakdown.</p>
             <ResponsiveContainer width="100%" height={200}>
@@ -545,7 +545,7 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
         </Card>
 
         {/* Performance vs Team */}
-        <Card title="vs Team Average" className="chart-card">
+        <Card title="vs Team Average" className="chart-card" style={{ minHeight: '420px' }}>
           <div className="chart-content">
             <p className="chart-description" style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Individual vs team metrics.</p>
             <ResponsiveContainer width="100%" height={200}>
@@ -673,31 +673,31 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
                 <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Period</th>
                 <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Leads</th>
                 <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Appts</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Conv %</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', background: '#2d6a4f' }}>Showed</th>
+                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', background: '#1e4175' }}>Conv %</th>
+                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Showed</th>
                 <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>No Show</th>
                 <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Confirmed</th>
                 <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cancelled</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Show %</th>
+                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', background: '#1e4175' }}>Show %</th>
                 <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>vs Team</th>
               </tr>
             </thead>
             <tbody>
               {chartData.map((row, idx) => (
                 <tr key={row.period} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#fafcfd' }}>
-                  <td style={{ padding: '16px', fontWeight: 700, color: '#1e293b' }}>{row.period}</td>
-                  <td style={{ padding: '16px', textAlign: 'right', fontWeight: 600, color: '#475569' }}>{row.leads}</td>
-                  <td style={{ padding: '16px', textAlign: 'right', fontWeight: 600, color: '#475569' }}>{row.appointments}</td>
-                  <td style={{ padding: '16px', textAlign: 'right' }}>
+                  <td style={{ padding: '18px 16px', fontWeight: 700, color: '#1e293b' }}>{row.period}</td>
+                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 600, color: '#475569' }}>{row.leads}</td>
+                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 600, color: '#475569' }}>{row.appointments}</td>
+                  <td style={{ padding: '18px 16px', textAlign: 'right', background: idx % 2 === 0 ? '#f8fafc' : '#f0f4f8' }}>
                     <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, background: row.conversion > row.teamConversion ? '#f0fdf4' : '#fefce8', color: row.conversion > row.teamConversion ? '#166534' : '#854d0e' }}>
                       {row.conversion}%
                     </span>
                   </td>
-                  <td style={{ padding: '16px', textAlign: 'right', fontWeight: 700, color: '#166534', background: idx % 2 === 0 ? '#f0fdf4' : '#dcfce7' }}>{row.showed}</td>
-                  <td style={{ padding: '16px', textAlign: 'right', fontWeight: 600, color: '#9a3412' }}>{row.noShow}</td>
-                  <td style={{ padding: '16px', textAlign: 'right', fontWeight: 600, color: '#0369a1' }}>{row.confirmed}</td>
-                  <td style={{ padding: '16px', textAlign: 'right', fontWeight: 600, color: '#991b1b' }}>{row.cancelled}</td>
-                  <td style={{ padding: '16px', textAlign: 'right' }}>
+                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 700, color: '#166534' }}>{row.showed}</td>
+                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 600, color: '#9a3412' }}>{row.noShow}</td>
+                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 600, color: '#0369a1' }}>{row.confirmed}</td>
+                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 600, color: '#991b1b' }}>{row.cancelled}</td>
+                  <td style={{ padding: '18px 16px', textAlign: 'right', background: idx % 2 === 0 ? '#f8fafc' : '#f0f4f8' }}>
                     <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, background: row.showRate > 50 ? '#f0fdf4' : row.showRate > 25 ? '#fefce8' : '#fef2f2', color: row.showRate > 50 ? '#166534' : row.showRate > 25 ? '#854d0e' : '#991b1b' }}>
                       {row.showRate}%
                     </span>
@@ -714,7 +714,7 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
         </div>
       </Card>
 
-      {/* 6-Month Performance Analysis - Collapsible */}
+      {/* 6-Month Performance Analysis - Premium Split Layout */}
       <Card className="chart-card wide" style={{marginTop: '30px'}}>
         <div 
           className="insights-header"
@@ -724,25 +724,13 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: showInsights ? '20px' : '0'
+            marginBottom: showInsights ? '24px' : '0'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#2c5282' }}>
-              📊 6-Month Performance Analysis & Insights
-            </h3>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <span className={`trend-badge ${performanceTrend.conversionChange < 0 ? 'negative' : 'positive'}`}>
-                Conversion {performanceTrend.conversionChange > 0 ? '+' : ''}{performanceTrend.conversionChange.toFixed(1)}%
-              </span>
-              <span className={`trend-badge ${performanceTrend.showRateChange < 0 ? 'negative' : 'positive'}`}>
-                Show Rate {performanceTrend.showRateChange > 0 ? '+' : ''}{performanceTrend.showRateChange.toFixed(1)}%
-              </span>
-              <span className={`trend-badge ${performanceTrend.leadsVelocityChange < 0 ? 'negative' : 'positive'}`}>
-                Leads {performanceTrend.leadsVelocityChange > 0 ? '+' : ''}{performanceTrend.leadsVelocityChange.toFixed(1)}%
-              </span>
-            </div>
-          </div>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#2c5282', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={20} color="#2c5282" />
+            6-Month Performance Analysis & Insights
+          </h3>
           <ChevronDown 
             size={20} 
             style={{ 
@@ -754,267 +742,278 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
         </div>
 
         {showInsights && (
-          <>
-            {/* Mini Trend Chart */}
-            <div style={{ marginBottom: '24px', height: '100px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={[
-                  { 
-                    name: '6M Avg', 
-                    conversion: performanceTrend.sixMonthData.conversion, 
-                    showRate: performanceTrend.sixMonthData.showRate, 
-                    leads: performanceTrend.leadsPerMonth 
-                  },
-                  { 
-                    name: 'Current', 
-                    conversion: performanceTrend.oneMonthData.conversion, 
-                    showRate: performanceTrend.oneMonthData.showRate, 
-                    leads: performanceTrend.oneMonthData.leads 
-                  }
-                ]}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="name" stroke="#64748b" style={{ fontSize: '11px' }} />
-                  <YAxis stroke="#64748b" style={{ fontSize: '11px' }} />
-                  <RechartsTooltip 
-                    contentStyle={{ 
-                      background: 'white', 
-                      border: '1px solid #e2e8f0', 
-                      borderRadius: '6px',
-                      fontSize: '12px'
-                    }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="conversion" 
-                    stroke="#ec4899" 
-                    strokeWidth={2} 
-                    name="Conversion %"
-                    dot={{ r: 4 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="showRate" 
-                    stroke="#f472b6" 
-                    strokeWidth={2} 
-                    name="Show Rate %"
-                    dot={{ r: 4 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="leads" 
-                    stroke="#a855f7" 
-                    strokeWidth={2} 
-                    name="Leads/Month"
-                    dot={{ r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Detailed Metrics Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: '16px',
-              marginBottom: '20px'
-            }}>
-              {/* Conversion Rate Trend */}
-              <div style={{
-                padding: '16px',
-                background: performanceTrend.conversionChange < 0 ? '#fef2f2' : '#f0fdf4',
-                border: `2px solid ${performanceTrend.conversionChange < 0 ? '#fecaca' : '#bbf7d0'}`,
-                borderRadius: '8px'
-              }}>
-                <p style={{ 
-                  margin: '0 0 4px 0', 
-                  fontSize: '11px', 
-                  fontWeight: '600', 
-                  color: '#64748b', 
-                  textTransform: 'uppercase', 
-                  letterSpacing: '0.5px' 
-                }}>
-                  CONVERSION RATE TREND
-                </p>
-                <p style={{ 
-                  margin: 0, 
-                  fontSize: '24px', 
-                  fontWeight: '700', 
-                  color: performanceTrend.conversionChange < 0 ? '#dc2626' : '#16a34a'
-                }}>
-                  {performanceTrend.conversionChange > 0 ? '+' : ''}{performanceTrend.conversionChange.toFixed(1)}%
-                </p>
-                <p style={{ 
-                  margin: '4px 0 8px 0', 
-                  fontSize: '13px', 
-                  color: '#475569' 
-                }}>
-                  {performanceTrend.sixMonthData.conversion.toFixed(1)}% → {performanceTrend.oneMonthData.conversion.toFixed(1)}%
-                </p>
-                <p style={{ 
-                  margin: 0, 
-                  fontSize: '12px', 
-                  color: '#64748b', 
-                  fontStyle: 'italic' 
-                }}>
-                  {performanceTrend.conversionChange < 0 ? 'Fewer leads converting to appointments' : 'More leads converting to appointments'}
-                </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '65fr 35fr', gap: '28px' }}>
+            {/* LEFT COLUMN (65%) - Visual Zone */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', height: '100%' }}>
+              {/* Sparkline Chart - Clean & Minimal */}
+              <div style={{ height: '140px', background: '#fafbfc', borderRadius: '8px', padding: '16px 12px 12px 12px', position: 'relative' }}>
+                {/* Chart Legend - Aligned with Title */}
+                <div style={{ position: 'absolute', top: '16px', right: '12px', display: 'flex', gap: '14px', fontSize: '10px', fontWeight: '600', color: '#64748b' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ width: '14px', height: '3px', background: '#2c5282', borderRadius: '2px' }}></div>
+                    Conversion
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ width: '14px', height: '3px', background: '#667eea', borderRadius: '2px' }}></div>
+                    Show Rate
+                  </span>
+                </div>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart 
+                    data={[
+                      { 
+                        name: '6M Avg', 
+                        conversion: performanceTrend.sixMonthData.conversion, 
+                        showRate: performanceTrend.sixMonthData.showRate
+                      },
+                      { 
+                        name: 'Current', 
+                        conversion: performanceTrend.oneMonthData.conversion, 
+                        showRate: performanceTrend.oneMonthData.showRate
+                      }
+                    ]}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
+                  >
+                    <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: '11px', fontWeight: '600' }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip 
+                      contentStyle={{ 
+                        background: 'white', 
+                        border: '1px solid #e2e8f0', 
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        padding: '8px 10px'
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="conversion" 
+                      stroke="#2c5282" 
+                      strokeWidth={3.5} 
+                      name="Conversion %"
+                      dot={{ r: 6, fill: '#2c5282', strokeWidth: 2, stroke: 'white' }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="showRate" 
+                      stroke="#667eea" 
+                      strokeWidth={3.5} 
+                      name="Show Rate %"
+                      dot={{ r: 6, fill: '#667eea', strokeWidth: 2, stroke: 'white' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
 
-              {/* Show Rate Trend */}
-              <div style={{
-                padding: '16px',
-                background: performanceTrend.showRateChange < 0 ? '#fef2f2' : '#f0fdf4',
-                border: `2px solid ${performanceTrend.showRateChange < 0 ? '#fecaca' : '#bbf7d0'}`,
-                borderRadius: '8px'
-              }}>
-                <p style={{ 
-                  margin: '0 0 4px 0', 
-                  fontSize: '11px', 
-                  fontWeight: '600', 
-                  color: '#64748b', 
-                  textTransform: 'uppercase', 
-                  letterSpacing: '0.5px' 
+              {/* Trend Pills - Horizontal Row of 3 (Tighter) */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                {/* Conversion Rate Pill */}
+                <div style={{
+                  padding: '12px 14px',
+                  background: performanceTrend.conversionChange < 0 ? '#fef2f2' : '#f0fdf4',
+                  border: `2px solid ${performanceTrend.conversionChange < 0 ? '#fecaca' : '#bbf7d0'}`,
+                  borderRadius: '8px'
                 }}>
-                  SHOW RATE TREND
-                </p>
-                <p style={{ 
-                  margin: 0, 
-                  fontSize: '24px', 
-                  fontWeight: '700', 
-                  color: performanceTrend.showRateChange < 0 ? '#dc2626' : '#16a34a'
-                }}>
-                  {performanceTrend.showRateChange > 0 ? '+' : ''}{performanceTrend.showRateChange.toFixed(1)}%
-                </p>
-                <p style={{ 
-                  margin: '4px 0 8px 0', 
-                  fontSize: '13px', 
-                  color: '#475569' 
-                }}>
-                  {performanceTrend.sixMonthData.showRate.toFixed(1)}% → {performanceTrend.oneMonthData.showRate.toFixed(1)}%
-                </p>
-                <p style={{ 
-                  margin: 0, 
-                  fontSize: '12px', 
-                  color: '#64748b', 
-                  fontStyle: 'italic' 
-                }}>
-                  {performanceTrend.showRateChange < 0 ? 'Fewer clients attending appointments' : 'More clients attending appointments'}
-                </p>
-              </div>
-
-              {/* Lead Velocity */}
-              <div style={{
-                padding: '16px',
-                background: performanceTrend.leadsVelocityChange < 0 ? '#fef2f2' : '#f0fdf4',
-                border: `2px solid ${performanceTrend.leadsVelocityChange < 0 ? '#fecaca' : '#bbf7d0'}`,
-                borderRadius: '8px'
-              }}>
-                <p style={{ 
-                  margin: '0 0 4px 0', 
-                  fontSize: '11px', 
-                  fontWeight: '600', 
-                  color: '#64748b', 
-                  textTransform: 'uppercase', 
-                  letterSpacing: '0.5px' 
-                }}>
-                  LEAD VELOCITY
-                </p>
-                <p style={{ 
-                  margin: 0, 
-                  fontSize: '24px', 
-                  fontWeight: '700', 
-                  color: performanceTrend.leadsVelocityChange < 0 ? '#dc2626' : '#16a34a'
-                }}>
-                  {performanceTrend.leadsVelocityChange > 0 ? '+' : ''}{performanceTrend.leadsVelocityChange.toFixed(1)}%
-                </p>
-                <p style={{ 
-                  margin: '4px 0 8px 0', 
-                  fontSize: '13px', 
-                  color: '#475569' 
-                }}>
-                  {performanceTrend.leadsPerMonth.toFixed(0)}/month → {performanceTrend.oneMonthData.leads}/month
-                </p>
-                <p style={{ 
-                  margin: 0, 
-                  fontSize: '12px', 
-                  color: '#64748b', 
-                  fontStyle: 'italic' 
-                }}>
-                  {performanceTrend.leadsVelocityChange < 0 ? 'Lead generation slowing' : 'Lead generation accelerating'}
-                </p>
-              </div>
-            </div>
-
-            {/* Daily Performance Pace */}
-            <div style={{
-              padding: '16px',
-              background: '#ecfeff',
-              border: '2px solid #67e8f9',
-              borderRadius: '8px',
-              marginBottom: '20px'
-            }}>
-              <p style={{ 
-                margin: '0 0 12px 0', 
-                fontSize: '13px', 
-                fontWeight: '600', 
-                color: '#0e7490',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                ⚡ DAILY PERFORMANCE PACE
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div>
-                  <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#0e7490', fontWeight: '600' }}>
-                    6-Month Average Daily:
+                  <p style={{ 
+                    margin: '0 0 6px 0', 
+                    fontSize: '10px', 
+                    fontWeight: '600', 
+                    color: '#64748b', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.5px' 
+                  }}>
+                    Conversion
                   </p>
-                  <p style={{ margin: '0 0 2px 0', fontSize: '14px', color: '#0f172a' }}>
-                    {performanceTrend.sixMonthDailyLeads.toFixed(2)} leads/day
+                  <p style={{ 
+                    margin: '0 0 4px 0', 
+                    fontSize: '26px', 
+                    fontWeight: '700', 
+                    color: performanceTrend.conversionChange < 0 ? '#991b1b' : '#166534',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    {performanceTrend.conversionChange > 0 ? <TrendingUp size={22} /> : <TrendingDown size={22} />}
+                    {performanceTrend.conversionChange > 0 ? '+' : ''}{performanceTrend.conversionChange.toFixed(1)}%
                   </p>
-                  <p style={{ margin: 0, fontSize: '14px', color: '#0f172a' }}>
-                    {(performanceTrend.sixMonthData.appointments / 180).toFixed(2)} appointments/day
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: '12px', 
+                    color: '#475569',
+                    fontWeight: '500'
+                  }}>
+                    {performanceTrend.sixMonthData.conversion.toFixed(1)}% → {performanceTrend.oneMonthData.conversion.toFixed(1)}%
                   </p>
                 </div>
-                <div>
-                  <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#0e7490', fontWeight: '600' }}>
-                    Current 30-Day Daily:
+
+                {/* Show Rate Pill */}
+                <div style={{
+                  padding: '12px 14px',
+                  background: performanceTrend.showRateChange < 0 ? '#fef2f2' : '#f0fdf4',
+                  border: `2px solid ${performanceTrend.showRateChange < 0 ? '#fecaca' : '#bbf7d0'}`,
+                  borderRadius: '8px'
+                }}>
+                  <p style={{ 
+                    margin: '0 0 6px 0', 
+                    fontSize: '10px', 
+                    fontWeight: '600', 
+                    color: '#64748b', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.5px' 
+                  }}>
+                    Show Rate
                   </p>
-                  <p style={{ margin: '0 0 2px 0', fontSize: '14px', color: '#0f172a', fontWeight: '600' }}>
-                    {performanceTrend.thirtyDayDailyLeads.toFixed(2)} leads/day
+                  <p style={{ 
+                    margin: '0 0 4px 0', 
+                    fontSize: '26px', 
+                    fontWeight: '700', 
+                    color: performanceTrend.showRateChange < 0 ? '#991b1b' : '#166534',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    {performanceTrend.showRateChange > 0 ? <TrendingUp size={22} /> : <TrendingDown size={22} />}
+                    {performanceTrend.showRateChange > 0 ? '+' : ''}{performanceTrend.showRateChange.toFixed(1)}%
                   </p>
-                  <p style={{ margin: 0, fontSize: '14px', color: '#0f172a', fontWeight: '600' }}>
-                    {(performanceTrend.oneMonthData.appointments / 30).toFixed(2)} appointments/day
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: '12px', 
+                    color: '#475569',
+                    fontWeight: '500'
+                  }}>
+                    {performanceTrend.sixMonthData.showRate.toFixed(1)}% → {performanceTrend.oneMonthData.showRate.toFixed(1)}%
+                  </p>
+                </div>
+
+                {/* Velocity Pill */}
+                <div style={{
+                  padding: '12px 14px',
+                  background: performanceTrend.leadsVelocityChange < 0 ? '#fef2f2' : '#f0fdf4',
+                  border: `2px solid ${performanceTrend.leadsVelocityChange < 0 ? '#fecaca' : '#bbf7d0'}`,
+                  borderRadius: '8px'
+                }}>
+                  <p style={{ 
+                    margin: '0 0 6px 0', 
+                    fontSize: '10px', 
+                    fontWeight: '600', 
+                    color: '#64748b', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.5px' 
+                  }}>
+                    Velocity
+                  </p>
+                  <p style={{ 
+                    margin: '0 0 4px 0', 
+                    fontSize: '26px', 
+                    fontWeight: '700', 
+                    color: performanceTrend.leadsVelocityChange < 0 ? '#991b1b' : '#166534',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    {performanceTrend.leadsVelocityChange > 0 ? <TrendingUp size={22} /> : <TrendingDown size={22} />}
+                    {performanceTrend.leadsVelocityChange > 0 ? '+' : ''}{performanceTrend.leadsVelocityChange.toFixed(1)}%
+                  </p>
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: '12px', 
+                    color: '#475569',
+                    fontWeight: '500'
+                  }}>
+                    {performanceTrend.leadsPerMonth.toFixed(0)} → {performanceTrend.oneMonthData.leads}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Interpretation Section */}
-            <div style={{
-              padding: '16px',
-              background: '#fefce8',
-              border: '3px solid #fde047',
-              borderLeft: '6px solid #eab308',
-              borderRadius: '8px'
-            }}>
-              <p style={{ 
-                margin: '0 0 8px 0', 
-                fontSize: '13px', 
-                fontWeight: '600', 
-                color: '#713f12',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
+            {/* RIGHT COLUMN (35%) - Context Zone */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', height: '100%' }}>
+              {/* Daily Performance Pace - Compact Strip */}
+              <div style={{
+                padding: '18px',
+                background: 'linear-gradient(135deg, #ecfeff 0%, #f0f9ff 100%)',
+                border: '1px solid #a5f3fc',
+                borderLeft: '4px solid #06b6d4',
+                borderRadius: '8px'
               }}>
-                💡 WHAT THIS MEANS
-              </p>
-              <div 
-                style={{fontSize: '13px', color: '#422006', lineHeight: '1.6'}}
-                dangerouslySetInnerHTML={{__html: performanceTrend.detailedAnalysis}}
-              />
+                <p style={{ 
+                  margin: '0 0 14px 0', 
+                  fontSize: '11px', 
+                  fontWeight: '700', 
+                  color: '#0e7490',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>
+                  ⚡ Daily Performance Pace
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#64748b', fontWeight: '600' }}>6M Avg</p>
+                    <p style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#475569' }}>
+                      {performanceTrend.sixMonthDailyLeads.toFixed(1)}
+                    </p>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: '#94a3b8' }}>leads/day</p>
+                  </div>
+                  <ArrowRight size={28} color={performanceTrend.leadsVelocityChange < 0 ? '#991b1b' : '#166534'} strokeWidth={2.5} />
+                  <div>
+                    <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#64748b', fontWeight: '600' }}>Current</p>
+                    <p style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+                      {performanceTrend.thirtyDayDailyLeads.toFixed(1)}
+                    </p>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: '#94a3b8' }}>leads/day</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* What This Means - Premium AI Box */}
+              <div style={{
+                padding: '20px',
+                background: 'white',
+                border: '2px solid #e2e8f0',
+                borderRadius: '8px',
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                {/* Premium Header */}
+                <div style={{
+                  margin: '0 0 16px 0',
+                  padding: '0 0 12px 0',
+                  borderBottom: '2px solid #f1f5f9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <Sparkles size={16} color="#2c5282" />
+                  <p style={{ 
+                    margin: 0,
+                    fontSize: '12px', 
+                    fontWeight: '700', 
+                    color: '#2c5282',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    What This Means
+                  </p>
+                </div>
+                
+                {/* AI Content */}
+                <div 
+                  style={{
+                    fontSize: '13px', 
+                    color: '#475569', 
+                    lineHeight: '1.9',
+                    flex: 1
+                  }}
+                  dangerouslySetInnerHTML={{__html: performanceTrend.detailedAnalysis
+                    .replace(/Performance is /g, '<strong style="color: #1e293b;">Performance is </strong>')
+                    .replace(/<strong>Recommendation:<\/strong>/g, 
+                      '<div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0;"><p style="margin: 0 0 6px 0; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #2c5282; text-transform: uppercase; letter-spacing: 0.5px;"><span style="font-size: 14px; color: #2c5282;">→</span> NEXT STEP</p><strong style="color: #2c5282; font-size: 13px; line-height: 1.8; font-weight: 700;">')
+                    .replace(/<\/strong>$/g, '</strong></div>')
+                  }}
+                />
+              </div>
             </div>
-          </>
+          </div>
         )}
       </Card>
 

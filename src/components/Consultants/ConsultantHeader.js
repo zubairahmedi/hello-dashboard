@@ -141,17 +141,18 @@ export default function ConsultantHeader({ consultant, timePeriod, setTimePeriod
             <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Appointments</span>
           </div>
           <div style={{ fontSize: '32px', fontWeight: 800, color: '#1e293b', lineHeight: 1.1 }}>{appointments}</div>
-          <div style={{ 
-            marginTop: '12px', 
-            padding: '6px 10px', 
-            background: parseFloat(showRate) >= 50 ? '#f0fdf4' : '#fefce8', 
-            borderRadius: '6px', 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '4px' 
-          }}>
-            <Target size={14} color={parseFloat(showRate) >= 50 ? '#166534' : '#854d0e'} />
-            <span style={{ fontSize: '13px', fontWeight: 600, color: parseFloat(showRate) >= 50 ? '#166534' : '#854d0e' }}>{showRate}% Show</span>
+          <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <span style={{ 
+              padding: '6px 10px', 
+              background: parseFloat(showRate) >= 50 ? '#f0fdf4' : '#fefce8', 
+              borderRadius: '6px', 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '4px' 
+            }}>
+              <Target size={14} color={parseFloat(showRate) >= 50 ? '#166534' : '#854d0e'} />
+              <span style={{ fontSize: '13px', fontWeight: 600, color: parseFloat(showRate) >= 50 ? '#166534' : '#854d0e' }}>{showRate}% Show</span>
+            </span>
           </div>
         </div>
 
@@ -168,16 +169,15 @@ export default function ConsultantHeader({ consultant, timePeriod, setTimePeriod
             <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Confirmed</span>
           </div>
           <div style={{ fontSize: '32px', fontWeight: 800, color: '#1e293b', lineHeight: 1.1 }}>{confirmed}</div>
-          <div style={{ 
-            marginTop: '12px', 
-            padding: '6px 10px', 
-            background: '#f0f9ff', 
-            borderRadius: '6px', 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '4px' 
-          }}>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: '#0369a1' }}>
+          <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <span style={{ 
+              padding: '6px 10px', 
+              background: '#f0f9ff', 
+              borderRadius: '6px', 
+              fontSize: '13px', 
+              fontWeight: 600, 
+              color: '#0369a1' 
+            }}>
               {appointments > 0 ? (((confirmed + showed) / appointments) * 100).toFixed(0) : 0}% Stability
             </span>
           </div>
@@ -197,10 +197,10 @@ export default function ConsultantHeader({ consultant, timePeriod, setTimePeriod
           </div>
           <div style={{ fontSize: '32px', fontWeight: 800, color: '#1e293b', lineHeight: 1.1 }}>{showed}</div>
           <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '11px', padding: '4px 8px', background: '#fef2f2', color: '#991b1b', borderRadius: '4px', fontWeight: 600 }}>
+            <span style={{ fontSize: '13px', padding: '6px 10px', background: '#fef2f2', color: '#991b1b', borderRadius: '6px', fontWeight: 600 }}>
               {noShow} No-Show
             </span>
-            <span style={{ fontSize: '11px', padding: '4px 8px', background: '#fef2f2', color: '#991b1b', borderRadius: '4px', fontWeight: 600 }}>
+            <span style={{ fontSize: '13px', padding: '6px 10px', background: '#fef2f2', color: '#991b1b', borderRadius: '6px', fontWeight: 600 }}>
               {cancelled} Cancel
             </span>
           </div>
