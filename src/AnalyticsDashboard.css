@@ -387,7 +387,7 @@
 .score-item {
   background: #f8fafc;
   padding: 20px 16px;
-  border-radius: 10px;
+  border-radius: 12px;
   text-align: center;
   border: 1px solid #e2e8f0;
   box-shadow: none;
@@ -459,7 +459,7 @@
 .referral-card {
   background: linear-gradient(135deg, #ebf8ff 0%, #dbeafe 100%);
   padding: 24px;
-  border-radius: 10px;
+  border-radius: 12px;
   border-left: 3px solid #3182ce;
 }
 
@@ -496,7 +496,7 @@
 .referral-item {
   background: #f8fafc;
   padding: 16px;
-  border-radius: 10px;
+  border-radius: 12px;
   border-left: 3px solid #3182ce;
 }
 

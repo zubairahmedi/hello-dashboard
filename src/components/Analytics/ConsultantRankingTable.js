@@ -83,7 +83,7 @@ export default function ConsultantRankingTable({ data, period, consultants }) {
   };
 
   // Mini progress bar component
-  const MiniProgressBar = ({ value, maxValue, color, bgColor }) => (
+  const MiniProgressBar = ({ value, maxValue, gradient, color, bgColor }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'flex-end' }}>
       <div style={{ 
         width: '60px', 
@@ -95,7 +95,7 @@ export default function ConsultantRankingTable({ data, period, consultants }) {
         <div style={{ 
           width: `${Math.min((value / maxValue) * 100, 100)}%`, 
           height: '100%', 
-          background: color,
+          background: gradient || color,
           borderRadius: '3px',
           transition: 'width 0.3s ease'
         }} />
@@ -126,19 +126,19 @@ export default function ConsultantRankingTable({ data, period, consultants }) {
           <thead>
             <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
               <th className="th-sortable" onClick={() => requestSort('name')} style={{ textAlign: 'left', padding: '16px 24px', color: '#2c5282', fontWeight: 700, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.5px', cursor: 'pointer' }}>
-                Consultant <ArrowUpDown size={12} style={{ marginLeft: '4px' }} />
+                Consultant <ArrowUpDown size={14} style={{ marginLeft: '4px', color: '#2563eb', opacity: 1 }} />
               </th>
               <th className="th-sortable" onClick={() => requestSort('leads')} style={{ textAlign: 'right', padding: '16px 24px', color: '#2c5282', fontWeight: 700, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.5px', cursor: 'pointer' }}>
-                Leads <ArrowUpDown size={12} style={{ marginLeft: '4px' }} />
+                Leads <ArrowUpDown size={14} style={{ marginLeft: '4px', color: '#2563eb', opacity: 1 }} />
               </th>
               <th className="th-sortable" onClick={() => requestSort('appts')} style={{ textAlign: 'right', padding: '16px 24px', color: '#2c5282', fontWeight: 700, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.5px', cursor: 'pointer' }}>
-                Appointments <ArrowUpDown size={12} style={{ marginLeft: '4px' }} />
+                Appointments <ArrowUpDown size={14} style={{ marginLeft: '4px', color: '#2563eb', opacity: 1 }} />
               </th>
               <th className="th-sortable" onClick={() => requestSort('conversion')} style={{ textAlign: 'right', padding: '16px 24px', color: '#2c5282', fontWeight: 700, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.5px', cursor: 'pointer' }}>
-                Lead Conv. <ArrowUpDown size={12} style={{ marginLeft: '4px' }} />
+                Lead Conv. <ArrowUpDown size={14} style={{ marginLeft: '4px', color: '#2563eb', opacity: 1 }} />
               </th>
               <th className="th-sortable" onClick={() => requestSort('showRate')} style={{ textAlign: 'right', padding: '16px 24px', color: '#2c5282', fontWeight: 700, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.5px', cursor: 'pointer' }}>
-                Show Rate <ArrowUpDown size={12} style={{ marginLeft: '4px' }} />
+                Show Rate <ArrowUpDown size={14} style={{ marginLeft: '4px', color: '#2563eb', opacity: 1 }} />
               </th>
             </tr>
           </thead>
@@ -146,14 +146,38 @@ export default function ConsultantRankingTable({ data, period, consultants }) {
             {sortedData.map((row, idx) => {
               // Meaningful color thresholds (user-requested)
               const getConversionStyle = (rate) => {
-                if (rate >= 20) return { color: '#166534', bg: '#f0fdf4' }; // Good - green (20%+)
-                if (rate >= 12) return { color: '#854d0e', bg: '#fefce8' }; // Okay - yellow (12-20%)
-                return { color: '#991b1b', bg: '#fef2f2' }; // Bad - red (<12%)
+                if (rate >= 20) return { 
+                  gradient: 'linear-gradient(90deg, #4ade80 0%, #16a34a 100%)',
+                  color: '#166534', 
+                  bg: '#f0fdf4' 
+                }; // Good - green (20%+)
+                if (rate >= 12) return { 
+                  gradient: 'linear-gradient(90deg, #facc15 0%, #ca8a04 100%)',
+                  color: '#854d0e', 
+                  bg: '#fefce8' 
+                }; // Okay - yellow (12-20%)
+                return { 
+                  gradient: 'linear-gradient(90deg, #f87171 0%, #dc2626 100%)',
+                  color: '#991b1b', 
+                  bg: '#fef2f2' 
+                }; // Bad - red (<12%)
               };
               const getShowRateStyle = (rate) => {
-                if (rate >= 35) return { color: '#166534', bg: '#f0fdf4' }; // Good - green (35%+)
-                if (rate >= 25) return { color: '#854d0e', bg: '#fefce8' }; // Okay - yellow (25-35%)
-                return { color: '#991b1b', bg: '#fef2f2' }; // Bad - red (<25%)
+                if (rate >= 35) return { 
+                  gradient: 'linear-gradient(90deg, #4ade80 0%, #16a34a 100%)',
+                  color: '#166534', 
+                  bg: '#f0fdf4' 
+                }; // Good - green (35%+)
+                if (rate >= 25) return { 
+                  gradient: 'linear-gradient(90deg, #facc15 0%, #ca8a04 100%)',
+                  color: '#854d0e', 
+                  bg: '#fefce8' 
+                }; // Okay - yellow (25-35%)
+                return { 
+                  gradient: 'linear-gradient(90deg, #f87171 0%, #dc2626 100%)',
+                  color: '#991b1b', 
+                  bg: '#fef2f2' 
+                }; // Bad - red (<25%)
               };
               const convStyle = getConversionStyle(row.conversion);
               const showStyle = getShowRateStyle(row.showRate);
@@ -174,6 +198,7 @@ export default function ConsultantRankingTable({ data, period, consultants }) {
                   <MiniProgressBar 
                     value={row.conversion} 
                     maxValue={50} 
+                    gradient={convStyle.gradient}
                     color={convStyle.color} 
                     bgColor={convStyle.bg} 
                   />
@@ -182,6 +207,7 @@ export default function ConsultantRankingTable({ data, period, consultants }) {
                   <MiniProgressBar 
                     value={row.showRate} 
                     maxValue={100} 
+                    gradient={showStyle.gradient}
                     color={showStyle.color} 
                     bgColor={showStyle.bg} 
                   />

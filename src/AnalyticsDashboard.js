@@ -303,27 +303,29 @@ const AnalyticsDashboard = ({ data }) => {
         <div className="scorecard-grid">
           <div className="score-item overall">
             <span className="score-label">Overall Show Rate</span>
-            <span className="score-value-large">{stats.showRate}%</span>
+            <span className="score-value-large">{stats.showRate > 0 ? `${stats.showRate}%` : <span style={{color: '#cbd5e0'}}>—</span>}</span>
             <span className="score-subtitle">of total appointments</span>
           </div>
           <div className="score-item">
             <span className="score-label">Appointment Rate</span>
-            <div className="score-value">{stats.conversionRate}%</div>
+            <div className="score-value">{stats.conversionRate > 0 ? `${stats.conversionRate}%` : <span style={{color: '#cbd5e0'}}>—</span>}</div>
             <span className="score-subtitle">Lead to Appointment</span>
           </div>
           <div className="score-item">
             <span className="score-label">Confirmation Stability</span>
             <div className="score-value">
               {stats.appointments > 0 
-                ? (((stats.confirmed + stats.showed) / stats.appointments) * 100).toFixed(1) 
-                : 0}%
+                ? `${(((stats.confirmed + stats.showed) / stats.appointments) * 100).toFixed(1)}%` 
+                : <span style={{color: '#cbd5e0'}}>—</span>}
             </div>
             <span className="score-subtitle">Confirmed or Showed</span>
           </div>
           <div className="score-item">
             <span className="score-label">Cancel Rate</span>
-            <div className="score-value" style={{ color: '#e53e3e' }}>
-              {stats.appointments > 0 ? ((stats.cancelled / stats.appointments) * 100).toFixed(1) : 0}%
+            <div className="score-value" style={{ color: stats.appointments > 0 && stats.cancelled > 0 ? '#e53e3e' : '#cbd5e0' }}>
+              {stats.appointments > 0 && stats.cancelled > 0
+                ? `${((stats.cancelled / stats.appointments) * 100).toFixed(1)}%`
+                : '—'}
             </div>
             <span className="score-subtitle">of total appointments</span>
           </div>
@@ -361,7 +363,7 @@ const AnalyticsDashboard = ({ data }) => {
         <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '24px' }}>
           {/* Conversion Funnel - Left side (60%) */}
           <Card title="Conversion Funnel" className="chart-card">
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={300}>
               <BarChart
                 layout="vertical"
                 data={[
@@ -370,7 +372,7 @@ const AnalyticsDashboard = ({ data }) => {
                   { name: 'Confirmed', value: stats.confirmed, fill: '#38a169' },
                   { name: 'Showed', value: stats.showed, fill: '#2b6cb0' },
                 ]}
-                margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+                margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                 <XAxis type="number" />
@@ -418,12 +420,12 @@ const AnalyticsDashboard = ({ data }) => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <div style={{ flex: 1, background: '#f8fafc', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #3182ce' }}>
                     <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Total</div>
-                    <div style={{ fontSize: '20px', fontWeight: 800, color: '#2c5282' }}>{stats.referrals}</div>
+                    <div style={{ fontSize: '24px', fontWeight: 800, color: '#2c5282' }}>{stats.referrals}</div>
                     <div style={{ fontSize: '10px', color: '#94a3b8' }}>{stats.referralRate}% of appts</div>
                   </div>
                   <div style={{ flex: 1, background: '#f0fff4', padding: '12px', borderRadius: '8px', borderLeft: '3px solid #38a169' }}>
                     <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Avg/Consultant</div>
-                    <div style={{ fontSize: '20px', fontWeight: 800, color: '#276749' }}>{(stats.referrals > 0 ? (stats.referrals / data.consultants.length).toFixed(1) : 0)}</div>
+                    <div style={{ fontSize: '24px', fontWeight: 800, color: '#276749' }}>{(stats.referrals > 0 ? (stats.referrals / data.consultants.length).toFixed(1) : 0)}</div>
                     <div style={{ fontSize: '10px', color: '#94a3b8' }}>efficiency</div>
                   </div>
                 </div>
