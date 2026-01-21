@@ -151,10 +151,6 @@ function Login({ onLogin }) {
               )}
             </button>
           </form>
-
-          <div className="login-footer">
-            <p className="demo-note">Demo credentials available in environment config</p>
-          </div>
         </div>
       </div>
     </div>

@@ -114,7 +114,10 @@ function Dashboard({ onLogout }) {
       exportNodeAsPdf('dashboard-root', { filename: 'dashboard-report.pdf' });
     } else if (activeTab === 'metaAds') {
       exportNodeAsPdf('meta-ads-root', { filename: 'meta-ads-report.pdf' });
+    } else if (activeTab === 'sources') {
+      exportNodeAsPdf('sources-root', { filename: 'sources-report.pdf' });
     }
+    // Note: Consultants page has its own export in ConsultantHeader
   };
 
   return (
@@ -223,7 +226,7 @@ function Dashboard({ onLogout }) {
               {loading ? 'Refreshing...' : 'Refresh'}
             </button>
             
-            {(activeTab === 'totals' || activeTab === 'metaAds') && (
+            {(activeTab === 'totals' || activeTab === 'metaAds' || activeTab === 'sources') && (
               <button className="btn-action btn-primary" onClick={handleExport}>
                 <Download size={16} />
                 Export PDF

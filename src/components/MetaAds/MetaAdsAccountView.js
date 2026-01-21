@@ -7,8 +7,7 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
-
-const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00d4ff', '#54a0ff'];
+import { CHART_PALETTE } from '../../utils/chartColors';
 
 function MetaAdsAccountView({ data, accountName }) {
   console.log('[MetaAdsAccountView] Rendering with props:', { accountName, dataLength: data?.length, data });

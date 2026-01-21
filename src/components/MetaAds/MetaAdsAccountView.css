@@ -938,3 +938,477 @@
     width: 100%;
   }
 }
+
+/* =====================================================
+   META ADS OVERVIEW REDESIGN STYLES
+   ===================================================== */
+
+.meta-overview-container {
+  padding: 0;
+}
+
+/* Empty States */
+.meta-empty-state {
+  background: white;
+  border-radius: 12px;
+  padding: 60px 40px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.meta-empty-state p {
+  color: #64748b;
+  font-size: 16px;
+  margin: 0;
+}
+
+.meta-no-data-message {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.meta-no-data-message p {
+  color: #92400e;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Year Selector */
+.meta-year-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.meta-year-selector label {
+  font-weight: 600;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.meta-year-selector select {
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  background: white;
+  cursor: pointer;
+}
+
+.meta-year-selector select:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+/* Category Pills */
+.meta-category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.meta-category-pill {
+  padding: 8px 18px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.meta-category-pill:hover {
+  border-color: #3182ce;
+  color: #3182ce;
+}
+
+.meta-category-pill.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
+  color: white;
+}
+
+/* KPI Row */
+.meta-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.meta-kpi-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.meta-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.meta-kpi-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.meta-kpi-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.meta-kpi-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.meta-kpi-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.meta-kpi-subvalue {
+  font-size: 12px;
+  color: #3182ce;
+  font-weight: 600;
+}
+
+/* Section Title */
+.meta-section-title {
+  margin: 0 0 16px 0;
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+}
+
+/* Charts Row */
+.meta-charts-row {
+  display: grid;
+  grid-template-columns: 60% 40%;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.meta-chart-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.meta-chart-large {
+  grid-column: span 1;
+}
+
+.meta-chart-small {
+  grid-column: span 1;
+}
+
+.meta-chart-wrapper {
+  margin-top: 8px;
+}
+
+/* Chart Tooltip */
+.meta-chart-tooltip {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.meta-tooltip-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.meta-tooltip-value {
+  font-size: 13px;
+  font-weight: 500;
+  margin: 4px 0;
+}
+
+/* Category Legend */
+.meta-category-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.meta-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meta-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.meta-legend-name {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.meta-legend-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Table Section */
+.meta-table-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.meta-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.meta-table-header .meta-section-title {
+  margin: 0;
+}
+
+.meta-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.meta-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.meta-search-input {
+  padding: 10px 16px 10px 40px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 260px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.meta-search-input:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.meta-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.meta-table-scroll {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.meta-master-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  font-size: 14px;
+}
+
+.meta-master-table thead {
+  background: #f8fafc;
+}
+
+.meta-master-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.meta-master-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.meta-master-table th.sortable:hover {
+  color: #3182ce;
+}
+
+.meta-master-table th.sortable svg {
+  margin-left: 4px;
+  vertical-align: middle;
+  opacity: 0.5;
+}
+
+.meta-master-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.2s ease;
+}
+
+.meta-master-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.meta-master-table td {
+  padding: 14px 16px;
+  color: #334155;
+}
+
+.meta-account-name {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.meta-spend {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.meta-leads {
+  font-weight: 700;
+  color: #3182ce;
+}
+
+.meta-cpl {
+  font-weight: 600;
+}
+
+.meta-ctr-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.meta-bar-cell {
+  width: 120px;
+}
+
+.meta-mini-bar-wrapper {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.meta-mini-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.meta-engagement {
+  color: #64748b;
+}
+
+.meta-master-table tfoot {
+  background: #f8fafc;
+}
+
+.meta-master-table tfoot tr {
+  border-top: 2px solid #e2e8f0;
+}
+
+.meta-master-table tfoot th {
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 14px;
+  color: #1e293b;
+  text-transform: none;
+}
+
+.meta-table-footer {
+  padding: 12px 16px;
+  text-align: right;
+  font-size: 13px;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  margin-top: 16px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .meta-kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .meta-charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .meta-kpi-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .meta-category-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  
+  .meta-search-input {
+    width: 100%;
+  }
+  
+  .meta-table-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

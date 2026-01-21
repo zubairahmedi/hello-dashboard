@@ -5,8 +5,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, Cell, PieChart, Pie
 } from 'recharts';
-
-const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00d4ff', '#54a0ff'];
+import { CHART_PALETTE } from '../../utils/chartColors';
 
 function MonthComparison({ data, accountName, monthOptions }) {
   const [selectedMonths, setSelectedMonths] = useState([]);

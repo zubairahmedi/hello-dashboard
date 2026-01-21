@@ -13,6 +13,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
+import { CHART_PALETTE } from '../../utils/chartColors';
 
 function ConsultantMetaAdsView({ data }) {
   console.log('[ConsultantMetaAdsView] Rendering with data:', data);
@@ -84,8 +85,6 @@ function ConsultantMetaAdsView({ data }) {
     });
   }, [sortedConsultants]);
 
-  const lineColors = ['#667eea', '#4facfe', '#54a0ff', '#00d4ff', '#f093fb', '#ff9f43', '#26de81', '#a55eea'];
-
   // Expand/collapse state for rows (use assignedTo as key)
   const [expandedRows, setExpandedRows] = React.useState(() => new Set());
   const toggleRow = (key) => {
@@ -139,7 +138,7 @@ function ConsultantMetaAdsView({ data }) {
                   key={name}
                   type="monotone"
                   dataKey={name}
-                  stroke={lineColors[idx % lineColors.length]}
+                  stroke={CHART_PALETTE[idx % CHART_PALETTE.length]}
                   strokeWidth={2.4}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}

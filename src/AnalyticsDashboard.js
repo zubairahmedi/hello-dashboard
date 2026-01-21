@@ -17,15 +17,9 @@ import {
 import { Users, Calendar, CheckCircle, XCircle, TrendingUp, Award, Share2 } from 'lucide-react';
 import { Card, StatCard, TopPerformerCard } from './components/UI/Card';
 import ConsultantRankingTable from './components/Analytics/ConsultantRankingTable';
+import { STATUS_COLORS } from './utils/chartColors';
 import './AnalyticsDashboard.css';
 import './NewAnalytics.css';
-
-const STATUS_COLORS = {
-  showed: '#3182ce',
-  no_show: '#e53e3e',
-  confirmed: '#38a169',
-  cancelled: '#718096'
-};
 
 const AnalyticsDashboard = ({ data }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');

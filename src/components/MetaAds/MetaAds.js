@@ -239,6 +239,13 @@ function MetaAds() {
   }, [mainViewMode, consultantData, handleConsultantRefresh]);
 
   const dataArray = Array.isArray(mergedData) ? mergedData : [];
+  
+  // Debug logging
+  console.log('[MetaAds] Data state:', { 
+    mergedData: mergedData ? 'exists' : 'null', 
+    dataArrayLength: dataArray.length,
+    selectedAccount
+  });
 
   const monthOptions = React.useMemo(() => buildMonthOptions(dataArray), [dataArray]);
 
@@ -394,20 +401,7 @@ function MetaAds() {
         {/* Raw data preview removed per request */}
           </>
         ) : (
-          <>
-            <div className="consultant-view-header">
-              <div>
-                <h3>Consultants View</h3>
-                <p className="muted">Tagged contacts by consultant across campaigns</p>
-                {consultantDataFreshness && (
-                  <span className="data-freshness" style={{ fontSize: '12px', marginTop: '8px', display: 'inline-block' }}>
-                    {consultantDataFreshness}
-                  </span>
-                )}
-              </div>
-            </div>
-            <ConsultantMetaAdsView data={consultantData} />
-          </>
+          <ConsultantMetaAdsView data={consultantData} />
         )}
       </div>
     </div>

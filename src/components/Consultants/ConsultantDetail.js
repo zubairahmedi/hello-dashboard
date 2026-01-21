@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { ChevronDown, Sparkles, ArrowRight, TrendingUp, TrendingDown } from 'lucide-react';
 import './Consultant.css';
+import { STATUS_COLORS, CHART_PALETTE } from '../../utils/chartColors';
 // ⚠️ SEPARATE MONTHLY WEBHOOK SERVICE - DO NOT TOUCH MAIN DASHBOARD DATA
 import { fetchMonthlyPerformance, analyzeBestWorstMonths } from '../../utils/monthlyPerformanceService';
 
@@ -162,15 +163,13 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
 
   // Get current period data (30d default)
   const currentPeriod = chartData.find(d => d.period === '30D') || chartData[2];
-
-  const statusColors = ['#10b981', '#06b6d4', '#f59e0b', '#ef4444', '#9ca3af'];
   
   const statusBreakdown = useMemo(() => {
     return [
-      { name: 'Showed', value: currentPeriod.showed, color: '#10b981' },
-      { name: 'Confirmed', value: currentPeriod.confirmed, color: '#06b6d4' },
-      { name: 'No Show', value: currentPeriod.noShow, color: '#f59e0b' },
-      { name: 'Cancelled', value: currentPeriod.cancelled, color: '#ef4444' }
+      { name: 'Showed', value: currentPeriod.showed, color: STATUS_COLORS.showed },
+      { name: 'Confirmed', value: currentPeriod.confirmed, color: STATUS_COLORS.confirmed },
+      { name: 'No Show', value: currentPeriod.noShow, color: STATUS_COLORS.no_show },
+      { name: 'Cancelled', value: currentPeriod.cancelled, color: STATUS_COLORS.cancelled }
     ].filter(s => s.value > 0);
   }, [currentPeriod]);
 
@@ -666,44 +665,44 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
 
       {/* FULL-WIDTH: Performance Table */}
       <Card title="Complete Period Performance Breakdown" className="chart-card" style={{ marginBottom: '24px' }}>
-        <div className="table-container" style={{ overflowX: 'auto' }}>
-          <table className="consultant-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
+        <div className="table-container">
+          <table className="consultant-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', tableLayout: 'fixed' }}>
             <thead>
               <tr style={{ background: '#2c5282', borderBottom: '2px solid #1e4175' }}>
-                <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Period</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Leads</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Appts</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', background: '#1e4175' }}>Conv %</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Showed</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>No Show</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Confirmed</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cancelled</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', background: '#1e4175' }}>Show %</th>
-                <th style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>vs Team</th>
+                <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '8%' }}>Period</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '8%' }}>Leads</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '8%' }}>Appts</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', background: '#1e4175', width: '10%' }}>Conv%</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '9%' }}>Showed</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '9%' }}>No Show</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '10%' }}>Conf'd</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '10%' }}>Cancel</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', background: '#1e4175', width: '10%' }}>Show%</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '10%' }}>vs Team</th>
               </tr>
             </thead>
             <tbody>
               {chartData.map((row, idx) => (
                 <tr key={row.period} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#fafcfd' }}>
-                  <td style={{ padding: '18px 16px', fontWeight: 700, color: '#1e293b' }}>{row.period}</td>
-                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 600, color: '#475569' }}>{row.leads}</td>
-                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 600, color: '#475569' }}>{row.appointments}</td>
-                  <td style={{ padding: '18px 16px', textAlign: 'right', background: idx % 2 === 0 ? '#f8fafc' : '#f0f4f8' }}>
-                    <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, background: row.conversion > row.teamConversion ? '#f0fdf4' : '#fefce8', color: row.conversion > row.teamConversion ? '#166534' : '#854d0e' }}>
+                  <td style={{ padding: '12px 8px', fontWeight: 700, color: '#1e293b', fontSize: '0.8rem' }}>{row.period}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 600, color: '#475569' }}>{row.leads}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 600, color: '#475569' }}>{row.appointments}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', background: idx % 2 === 0 ? '#f8fafc' : '#f0f4f8' }}>
+                    <span style={{ padding: '3px 6px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600, background: row.conversion > row.teamConversion ? '#f0fdf4' : '#fefce8', color: row.conversion > row.teamConversion ? '#166534' : '#854d0e' }}>
                       {row.conversion}%
                     </span>
                   </td>
-                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 700, color: '#166534' }}>{row.showed}</td>
-                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 600, color: '#9a3412' }}>{row.noShow}</td>
-                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 600, color: '#0369a1' }}>{row.confirmed}</td>
-                  <td style={{ padding: '18px 16px', textAlign: 'right', fontWeight: 600, color: '#991b1b' }}>{row.cancelled}</td>
-                  <td style={{ padding: '18px 16px', textAlign: 'right', background: idx % 2 === 0 ? '#f8fafc' : '#f0f4f8' }}>
-                    <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, background: row.showRate > 50 ? '#f0fdf4' : row.showRate > 25 ? '#fefce8' : '#fef2f2', color: row.showRate > 50 ? '#166534' : row.showRate > 25 ? '#854d0e' : '#991b1b' }}>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: '#166534' }}>{row.showed}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 600, color: '#9a3412' }}>{row.noShow}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 600, color: '#0369a1' }}>{row.confirmed}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 600, color: '#991b1b' }}>{row.cancelled}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', background: idx % 2 === 0 ? '#f8fafc' : '#f0f4f8' }}>
+                    <span style={{ padding: '3px 6px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600, background: row.showRate > 50 ? '#f0fdf4' : row.showRate > 25 ? '#fefce8' : '#fef2f2', color: row.showRate > 50 ? '#166534' : row.showRate > 25 ? '#854d0e' : '#991b1b' }}>
                       {row.showRate}%
                     </span>
                   </td>
-                  <td style={{ padding: '16px', textAlign: 'right' }}>
-                    <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, background: row.vsTeam > 0 ? '#f0fdf4' : '#fef2f2', color: row.vsTeam > 0 ? '#166534' : '#991b1b' }}>
+                  <td style={{ padding: '12px 6px', textAlign: 'right' }}>
+                    <span style={{ padding: '3px 6px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600, background: row.vsTeam > 0 ? '#f0fdf4' : '#fef2f2', color: row.vsTeam > 0 ? '#166534' : '#991b1b' }}>
                       {row.vsTeam > 0 ? '+' : ''}{row.vsTeam}%
                     </span>
                   </td>

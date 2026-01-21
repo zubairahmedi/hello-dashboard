@@ -6,8 +6,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, Cell, PieChart, Pie
 } from 'recharts';
-
-const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00d4ff', '#54a0ff'];
+import { CHART_PALETTE } from '../../utils/chartColors';
 
 function YearlyView({ data, accountName }) {
   console.log('[YearlyView] Rendering with:', { accountName, dataLength: data?.length });
@@ -199,7 +198,7 @@ function YearlyView({ data, accountName }) {
                   dataKey="value"
                 >
                   {yearlyData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={CHART_PALETTE[index % CHART_PALETTE.length]} />
                   ))}
                 </Pie>
                 <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
@@ -268,8 +267,8 @@ function YearlyView({ data, accountName }) {
                                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
                                 <Tooltip />
                                 <Legend />
-                                <Line yAxisId="left" type="monotone" dataKey="spend" stroke={COLORS[idx % COLORS.length]} name="Spend ($)" strokeWidth={2} dot={{ r: 3 }} />
-                                <Line yAxisId="right" type="monotone" dataKey="leads" stroke={COLORS[(idx + 1) % COLORS.length]} name="Leads" strokeWidth={2} dot={{ r: 3 }} />
+                                <Line yAxisId="left" type="monotone" dataKey="spend" stroke={CHART_PALETTE[idx % CHART_PALETTE.length]} name="Spend ($)" strokeWidth={2} dot={{ r: 3 }} />
+                                <Line yAxisId="right" type="monotone" dataKey="leads" stroke={CHART_PALETTE[(idx + 1) % CHART_PALETTE.length]} name="Leads" strokeWidth={2} dot={{ r: 3 }} />
                               </LineChart>
                             </ResponsiveContainer>
                           </div>
@@ -283,7 +282,7 @@ function YearlyView({ data, accountName }) {
                                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                                 <YAxis tick={{ fontSize: 12 }} />
                                 <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                                <Line type="monotone" dataKey="cpl" stroke={COLORS[(idx + 2) % COLORS.length]} name="CPL ($)" strokeWidth={2} dot={{ r: 3 }} />
+                                <Line type="monotone" dataKey="cpl" stroke={CHART_PALETTE[(idx + 2) % CHART_PALETTE.length]} name="CPL ($)" strokeWidth={2} dot={{ r: 3 }} />
                               </LineChart>
                             </ResponsiveContainer>
                           </div>
