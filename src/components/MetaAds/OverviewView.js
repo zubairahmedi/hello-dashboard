@@ -62,9 +62,14 @@ function OverviewView({ data }) {
       return `${MONTHS[idx] || ''} ${y || ''}`.trim();
     };
 
+    // Filter rows by selected year
+    const filteredRows = Number.isFinite(selectedYear) 
+      ? rows.filter((row) => toNumber(row?.year) === selectedYear)
+      : rows;
+
     // Aggregate by campaign + monthKey, summing values across accounts
     const agg = new Map();
-    rows.forEach((row) => {
+    filteredRows.forEach((row) => {
       // Exclude yearly-only rows or anything without a valid month
       const monthKey = monthKeyForRow(row);
       if (!monthKey) return;
@@ -123,7 +128,7 @@ function OverviewView({ data }) {
       // Sort by month descending
       return (b.sortKey || '').localeCompare(a.sortKey || '');
     });
-  }, [rows]);
+  }, [rows, selectedYear]);
 
   // Yearly per-account aggregation for selected year
   const yearlyAccountRows = React.useMemo(() => {
@@ -212,8 +217,8 @@ function OverviewView({ data }) {
       <div className="table-section">
         <div className="comparison-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h4>Yearly Account Summary</h4>
-          <div>
-            <label htmlFor="overview-year-select" style={{ marginRight: 8 }}>Year:</label>
+          <div className="yearly-year-filter">
+            <label htmlFor="overview-year-select">Year:</label>
             <select id="overview-year-select" value={selectedYear || ''} onChange={(e) => setSelectedYear(Number(e.target.value))}>
               {yearOptions.map((y) => (
                 <option key={y} value={y}>{y}</option>

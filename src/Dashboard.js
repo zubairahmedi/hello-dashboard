@@ -11,7 +11,7 @@ import {
 } from './utils/indexedDbService';
 import MetaAds from './components/MetaAds/MetaAds';
 import Sources from './components/Sources/Sources';
-import API_CONFIG from './config/apiConfig';
+import GoogleAds from './components/GoogleAds/GoogleAds';
 
 const CACHE_KEY = 'dashboardData';
 
@@ -61,7 +61,7 @@ function Dashboard({ onLogout }) {
     setError(null);
     
     try {
-      const response = await fetch(API_CONFIG.AIRTABLE_WEBHOOK);
+      const response = await fetch('https://n8n.aiclinicgenius.com/webhook/airtable');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -159,6 +159,13 @@ function Dashboard({ onLogout }) {
               </button>
               <button
                 role="menuitem"
+                className={`nav-dropdown-item ${activeTab === 'googleAds' ? 'active' : ''}`}
+                onClick={() => selectTab('googleAds')}
+              >
+                Google Ads
+              </button>
+              <button
+                role="menuitem"
                 className={`nav-dropdown-item ${activeTab === 'sources' ? 'active' : ''}`}
                 onClick={() => selectTab('sources')}
               >
@@ -239,6 +246,10 @@ function Dashboard({ onLogout }) {
 
         {activeTab === 'metaAds' && (
           <MetaAds />
+        )}
+
+        {activeTab === 'googleAds' && (
+          <GoogleAds />
         )}
 
         {activeTab === 'sources' && (

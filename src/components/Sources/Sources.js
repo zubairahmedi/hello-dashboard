@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './Sources.css';
-import API_CONFIG from '../../config/apiConfig';
 import {
   initDB,
   getData,
@@ -10,7 +9,7 @@ import {
 import exportNodeAsPdf from '../../utils/pdfExport';
 
 const SOURCES_CACHE_KEY = 'sourcesData';
-const SOURCES_WEBHOOK_URL = API_CONFIG.SOURCES_WEBHOOK;
+const SOURCES_WEBHOOK_URL = 'https://n8n.aiclinicgenius.com/webhook/abb37c74-5acd-44cf-9c38-981d4692ea4a';
 
 function Sources() {
   const [data, setData] = useState(null);

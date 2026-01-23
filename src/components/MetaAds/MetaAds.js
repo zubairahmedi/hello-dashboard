@@ -23,7 +23,7 @@ import {
   META_ADS_MERGED_KEY,
   isDeltaConfigured
 } from '../../utils/metaAdsService';
-import { buildMonthOptions, filterRowsByMonth } from '../../utils/timeFilterService';
+import { buildMonthOptions, filterRowsByMonth, buildYearOptions } from '../../utils/timeFilterService';
 import {
   fetchConsultantMetaAds,
   CONSULTANT_META_ADS_KEY
@@ -41,6 +41,7 @@ const ACCOUNT_TABS = [
 ];
 
 function MetaAds() {
+  console.log('[MetaAds] Component rendering');
   const [mergedData, setMergedData] = useState(null);
   const [dataFreshness, setDataFreshness] = useState(null);
   const [isCached, setIsCached] = useState(false);
@@ -56,6 +57,7 @@ function MetaAds() {
   const [consultantData, setConsultantData] = useState(null);
   const [consultantLoading, setConsultantLoading] = useState(false);
   const [consultantDataFreshness, setConsultantDataFreshness] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(null); // For yearly view filtering
 
   // Load cached merged data on mount and run a quick delta update
   useEffect(() => {
@@ -241,12 +243,33 @@ function MetaAds() {
   const dataArray = Array.isArray(mergedData) ? mergedData : [];
 
   const monthOptions = React.useMemo(() => buildMonthOptions(dataArray), [dataArray]);
+  
+  const yearOptions = React.useMemo(() => {
+    console.log('[MetaAds] yearOptions useMemo executing...', { selectedAccount, dataArrayLength: dataArray.length });
+    // For account-specific views, build year options from account data
+    // For overview, build from all data
+    if (selectedAccount && selectedAccount !== 'Account Overview') {
+      let accountRows = dataArray.filter((row) => row?.accountname === selectedAccount);
+      const options = buildYearOptions(accountRows);
+      console.log('[MetaAds] Building yearOptions for account:', { selectedAccount, accountRowsCount: accountRows.length, yearOptionsCount: options.length, yearOptions: options });
+      return options;
+    }
+    const options = buildYearOptions(dataArray);
+    console.log('[MetaAds] Building yearOptions for all data:', { dataArrayCount: dataArray.length, yearOptionsCount: options.length });
+    return options;
+  }, [dataArray, selectedAccount]);
 
   useEffect(() => {
     if (!selectedMonthKey && monthOptions.length > 0) {
       setSelectedMonthKey(monthOptions[0].key);
     }
   }, [monthOptions, selectedMonthKey]);
+
+  useEffect(() => {
+    if (!selectedYear && yearOptions.length > 0) {
+      setSelectedYear(yearOptions[0].value); // Default to latest year
+    }
+  }, [yearOptions, selectedYear]);
 
   // All data for the selected account (no month filter)
   const accountData = React.useMemo(() => {
@@ -372,7 +395,7 @@ function MetaAds() {
         {selectedAccount && selectedAccount !== 'Account Overview' ? (
           (() => {
             const monthMeta = monthOptions.find((m) => m.key === selectedMonthKey);
-            console.log('[MetaAds] Rendering view with:', { selectedAccount, viewMode, selectedMonthKey, monthMeta, dataLength: filteredData?.length });
+            console.log('[MetaAds] Rendering view with:', { selectedAccount, viewMode, selectedMonthKey, monthMeta, dataLength: filteredData?.length, yearOptions, yearOptionsLength: yearOptions?.length });
             return (
               <>
                 {/* Mini Tab Switcher */}
@@ -397,7 +420,13 @@ function MetaAds() {
                     <MonthComparison data={accountData} accountName={selectedAccount} monthOptions={monthOptions} />
                   </>
                 ) : (
-                  <YearlyView data={accountData} accountName={selectedAccount} />
+                  <YearlyView 
+                    data={accountData} 
+                    accountName={selectedAccount}
+                    selectedYear={selectedYear}
+                    setSelectedYear={setSelectedYear}
+                    yearOptions={yearOptions}
+                  />
                 )}
               </>
             );

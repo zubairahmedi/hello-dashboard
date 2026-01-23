@@ -76,9 +76,9 @@
 }
 
 .expand-btn.open {
-  background: #f8f9ff;
-  border-color: #667eea;
-  color: #667eea;
+  background: #f0f4ff;
+  border-color: #0066cc;
+  color: #0066cc;
 }
 
 
@@ -106,32 +106,82 @@
   border-collapse: collapse;
   font-size: 13px;
   background: white;
+  table-layout: fixed;
 }
 
 .meta-ads-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
 }
 
 .meta-ads-table thead th {
   padding: 12px 14px;
-  text-align: left;
+  text-align: center;
   font-weight: 700;
   color: white;
   white-space: nowrap;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  border: none;
 }
 
-.meta-ads-table thead th:last-child {
-  border-right: none;
+/* COLUMN LAYOUT: Toggle | Consultant | 30 | 90 | 150 | 365 | Total Contacts */
+.meta-ads-table th:nth-child(1) {
+  width: 40px;
+  text-align: center;
 }
 
+.meta-ads-table th:nth-child(2) {
+  width: 160px;
+  text-align: left;
+}
+
+.meta-ads-table th:nth-child(3),
+.meta-ads-table th:nth-child(4),
+.meta-ads-table th:nth-child(5),
+.meta-ads-table th:nth-child(6) {
+  width: 60px;
+  text-align: center;
+}
+
+.meta-ads-table th:nth-child(7) {
+  width: 90px;
+  text-align: center;
+}
+
+/* BODY CELLS */
 .meta-ads-table td {
   padding: 10px 12px;
-  border-top: 1px solid #e3e6f0;
+  border-bottom: 1px solid #e3e6f0;
   color: #333;
+  text-align: center;
+}
+
+.meta-ads-table td:nth-child(1) {
+  width: 40px;
+  text-align: center;
+}
+
+.meta-ads-table td:nth-child(2) {
+  width: 160px;
+  text-align: left;
+  font-weight: 500;
+  color: #222;
+}
+
+.meta-ads-table td:nth-child(3),
+.meta-ads-table td:nth-child(4),
+.meta-ads-table td:nth-child(5),
+.meta-ads-table td:nth-child(6) {
+  width: 60px;
+  color: #0066cc;
+  font-weight: 600;
+}
+
+.meta-ads-table td:nth-child(7) {
+  width: 90px;
+  color: #555;
+  font-weight: 600;
 }
 
 .meta-ads-table tbody tr:hover {
@@ -154,7 +204,7 @@
 }
 
 .meta-ads-table tbody tr.consultant-row td:first-child {
-  border-left: 4px solid #667eea; /* accent bar for grouping */
+  border-left: 4px solid #0066cc; /* accent bar for grouping */
 }
 
 .meta-ads-table tbody tr.consultant-row td:nth-child(2) {
@@ -181,18 +231,19 @@
 }
 .kpi-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
 }
 
 .kpi-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
   color: white;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
+  padding: 14px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2);
+  transition: all 200ms ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Ensure KPI texts are white within Meta Ads view */
@@ -208,22 +259,23 @@
 }
 
 .kpi-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25);
 }
 
 .kpi-label {
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   opacity: 0.9;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-weight: 600;
 }
 
 .kpi-value {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 /* Charts Section */
@@ -288,7 +340,7 @@
 }
 
 .meta-ads-details-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -307,7 +359,7 @@
 }
 
 .meta-ads-details-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -445,19 +497,19 @@
 }
 
 .month-dropdown-trigger:hover {
-  border-color: #667eea;
-  background: #f8f9ff;
+  border-color: #0066cc;
+  background: #f0f4ff;
 }
 
 .month-dropdown-trigger:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
 }
 
 .dropdown-arrow {
   font-size: 11px;
-  color: #667eea;
+  color: #0066cc;
   margin-left: 8px;
 }
 
@@ -468,7 +520,7 @@
   left: 0;
   right: 0;
   background: white;
-  border: 2px solid #667eea;
+  border: 2px solid #0066cc;
   border-top: none;
   border-radius: 0 0 6px 6px;
   max-height: 300px;
@@ -513,7 +565,7 @@
 }
 
 .month-dropdown-item .month-checkbox:checked ~ .checkmark {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
   border-color: transparent;
 }
 
@@ -578,7 +630,7 @@
 }
 
 .comparison-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -740,38 +792,41 @@
 /* View Mode Switcher */
 .view-mode-switcher {
   display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  padding: 8px;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e3e6f0;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 6px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.04) 0%, rgba(118, 75, 162, 0.04) 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
   width: fit-content;
 }
 
 .view-mode-btn {
-  padding: 10px 20px;
-  background: white;
-  border: 2px solid #e3e6f0;
-  border-radius: 6px;
+  padding: 10px 18px;
+  background: #fff;
+  border: 1.5px solid rgba(102, 126, 234, 0.15);
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #666;
-  transition: all 0.2s ease;
+  color: #667eea;
+  transition: all 200ms ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .view-mode-btn:hover {
   border-color: #667eea;
   color: #667eea;
   background: #f8f9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.1);
 }
 
 .view-mode-btn.active {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-color: transparent;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
 /* Yearly View Styles */

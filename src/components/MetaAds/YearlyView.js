@@ -3,21 +3,29 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, Cell, PieChart, Pie
 } from 'recharts';
+import { filterRowsByYear } from '../../utils/timeFilterService';
 
 const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00d4ff', '#54a0ff'];
 
-function YearlyView({ data, accountName }) {
-  console.log('[YearlyView] Rendering with:', { accountName, dataLength: data?.length });
+function YearlyView({ data, accountName, selectedYear, setSelectedYear, yearOptions }) {
+  console.log('[YearlyView] Rendering with:', { accountName, dataLength: data?.length, selectedYear, yearOptions, yearOptionsLength: yearOptions?.length });
+  console.log('[YearlyView] yearOptions details:', yearOptions);
+  console.log('[YearlyView] Is yearOptions defined?', !!yearOptions, 'Length:', yearOptions?.length);
+
+  // Filter data by selected year
+  const yearFilteredData = useMemo(() => {
+    return filterRowsByYear(data, selectedYear);
+  }, [data, selectedYear]);
 
   // Filter for monthly campaign data
   const monthlyData = useMemo(() => {
-    return data ? data.filter(row => row._aggregation_type === 'monthly_campaign') : [];
-  }, [data]);
+    return yearFilteredData ? yearFilteredData.filter(row => row._aggregation_type === 'monthly_campaign') : [];
+  }, [yearFilteredData]);
 
   // Get yearly campaign aggregations
   const yearlyData = useMemo(() => {
-    return data ? data.filter(row => row._aggregation_type === 'yearly_campaign') : [];
-  }, [data]);
+    return yearFilteredData ? yearFilteredData.filter(row => row._aggregation_type === 'yearly_campaign') : [];
+  }, [yearFilteredData]);
 
   // Calculate yearly KPIs from monthly data
   const yearlyKPIs = useMemo(() => {
@@ -111,24 +119,42 @@ function YearlyView({ data, accountName }) {
 
   const campaigns = Object.keys(campaignTrendData);
 
-  if (!data || data.length === 0) {
-    return (
-      <div className="yearly-view">
-        <p className="muted">No yearly data available for {accountName}</p>
-      </div>
-    );
-  }
-
-  if (!yearlyKPIs) {
-    return <div className="muted">No data to display</div>;
-  }
-
   return (
     <div className="yearly-view">
       <div className="yearly-header">
         <h3>Yearly Performance - {accountName}</h3>
         <p className="yearly-subtitle">Full year overview with campaign trends and comparisons</p>
       </div>
+
+      {/* Year Filter - Always show */}
+      <div className="yearly-year-filter">
+        <label htmlFor="yearly-year">Year:</label>
+        <select
+          id="yearly-year"
+          value={selectedYear || ''}
+          onChange={(e) => setSelectedYear(Number(e.target.value))}
+        >
+          {yearOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Show message if no data */}
+      {(!data || data.length === 0) && (
+        <p className="muted">No yearly data available for {accountName}</p>
+      )}
+
+      {/* Show message if no KPIs */}
+      {data && data.length > 0 && !yearlyKPIs && (
+        <p className="muted">No data to display for selected year</p>
+      )}
+
+      {/* Show KPIs and charts only if data exists */}
+      {yearlyKPIs && (
+        <>
 
       {/* Yearly KPI Cards */}
       <div className="kpi-cards">
@@ -390,6 +416,8 @@ function YearlyView({ data, accountName }) {
           </table>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

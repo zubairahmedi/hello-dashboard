@@ -3,9 +3,8 @@
  * Fetches detailed monthly breakdown data for consultant best/worst month analysis
  * Uses SPECIAL WEBHOOK (different from main dashboard webhook)
  */
-import API_CONFIG from '../config/apiConfig';
 
-const MONTHLY_SPECIAL_WEBHOOK = API_CONFIG.MONTHLY_PERFORMANCE_WEBHOOK;
+const MONTHLY_SPECIAL_WEBHOOK = 'https://n8n.aiclinicgenius.com/webhook/c4da33a4-5da9-4570-93b8-d0f89385ed';
 
 // ⚠️ HARDCODED MONTHLY WEBHOOK IDS (verified and correct)
 // These IDs are ONLY for the monthly webhook - NEVER use these for main Airtable webhook
@@ -79,7 +78,8 @@ export async function fetchMonthlyPerformance(consultant) {
     // The browser's fetch API should automatically handle content-encoding (gzip, br, etc)
     // But let's read it as text first to debug
     const responseText = await response.text();
-
+    console.log(`[Monthly] Response text length: ${responseText?.length || 0}, preview: ${responseText?.substring(0, 200) || '(empty)'}`);
+    
     if (!responseText || responseText.trim() === '') {
       console.error('[Monthly] Empty response from webhook');
       return {};
@@ -88,6 +88,7 @@ export async function fetchMonthlyPerformance(consultant) {
     let data;
     try {
       data = JSON.parse(responseText);
+      console.log(`[Monthly] Successfully parsed JSON with ${Object.keys(data).length} keys`);
     } catch (parseError) {
       console.error('[Monthly] Failed to parse JSON:', parseError, 'Response preview:', responseText.substring(0, 200));
       return {};

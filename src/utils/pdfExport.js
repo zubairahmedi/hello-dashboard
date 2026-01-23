@@ -2,10 +2,9 @@
  * Server-side PDF Export Utility
  * Uses Puppeteer for professional PDF rendering via Express backend
  */
-import API_CONFIG from '../config/apiConfig';
 
-// PDF service endpoint
-const API_ENDPOINT = API_CONFIG.PDF_SERVICE;
+// Fixed to Render API as before
+const API_ENDPOINT = 'https://pdf-service-j950.onrender.com/api/generate-pdf';
 
 /**
  * exportNodeAsPdf: Main export function

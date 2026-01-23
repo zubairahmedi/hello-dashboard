@@ -14,6 +14,9 @@ function AnalyticsDashboard({ data }) {
   const [sortBy, setSortBy] = useState('leads');
   const [sortOrder, setSortOrder] = useState('desc');
 
+  // Guard against missing consultants array in cached/initial data
+  const consultants = Array.isArray(data?.consultants) ? data.consultants : [];
+
   // Score classification for UI (used by Quality Scorecard)
   const getScoreClass = (score) => {
     const s = parseFloat(score) || 0;
@@ -43,13 +46,13 @@ function AnalyticsDashboard({ data }) {
     // Sum leads and appointments from all consultants
     let leads = 0;
     let appointments = 0;
-    data.consultants.forEach(c => {
+    consultants.forEach(c => {
       leads += Number(c[`leads${currentConsultantSuffix}`] || 0);
       appointments += Number(c[`appointments${currentConsultantSuffix}`] || 0);
     });
     
     // Get aggregated status data for the selected time period
-    const aggregatedStatus = aggregateStatusByPeriod(data.consultants, timePeriod, appointments);
+    const aggregatedStatus = aggregateStatusByPeriod(consultants, timePeriod, appointments);
     const formattedStatus = formatStatusData(aggregatedStatus);
     
     const totalShowed = formattedStatus.showed;
@@ -85,7 +88,7 @@ function AnalyticsDashboard({ data }) {
 
   // Prepare consultant data for selected time period
   const consultantData = useMemo(() => {
-    return data.consultants.map(c => {
+    return consultants.map(c => {
       const leads = Number(c[`leads${currentConsultantSuffix}`] || 0);
       const appointments = Number(c[`appointments${currentConsultantSuffix}`] || 0);
       const referrals = Number(c[`referrals${currentConsultantSuffix}`] || 0);
@@ -125,7 +128,7 @@ function AnalyticsDashboard({ data }) {
         avgLeadToAppt: (c.lead_to_appt_ratio || 0).toFixed(1)
       };
     });
-  }, [data, currentConsultantSuffix, timePeriod]);
+  }, [consultants, currentConsultantSuffix, timePeriod]);
 
   // Sort consultant data
   const sortedConsultants = useMemo(() => {
@@ -139,6 +142,16 @@ function AnalyticsDashboard({ data }) {
 
   // Top performers
   const topPerformers = useMemo(() => {
+    if (!consultantData || consultantData.length === 0) {
+      const placeholder = { name: '—', leads: 0, appointments: 0, conversionRate: '0.0', referrals: 0 };
+      return {
+        byLeads: placeholder,
+        byAppointments: placeholder,
+        byConversion: placeholder,
+        byReferrals: placeholder
+      };
+    }
+
     const byLeads = [...consultantData].sort((a, b) => b.leads - a.leads)[0];
     const byAppointments = [...consultantData].sort((a, b) => b.appointments - a.appointments)[0];
     const byConversion = [...consultantData].sort((a, b) => parseFloat(b.conversionRate) - parseFloat(a.conversionRate))[0];
@@ -162,13 +175,13 @@ function AnalyticsDashboard({ data }) {
     return periods.map(p => {
       let leads = 0;
       let appointments = 0;
-      data.consultants.forEach(c => {
+      consultants.forEach(c => {
         leads += Number(c[`leads${p.key}`] || 0);
         appointments += Number(c[`appointments${p.key}`] || 0);
       });
       return { period: p.label, leads, appointments };
     });
-  }, [data]);
+  }, [consultants]);
 
   // Pie chart data for appointment status (using aggregated period data)
   const appointmentStatusData = useMemo(() => [

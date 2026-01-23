@@ -44,3 +44,34 @@ export function filterRowsByMonth(rows = [], monthMeta) {
     return rowYear === targetYear && rowMonthIdx === targetIndex;
   });
 }
+
+export function buildYearOptions(rows = []) {
+  const yearSet = new Set();
+  rows.forEach((row) => {
+    const year = row?.year;
+    if (year) {
+      yearSet.add(Number(year));
+    }
+  });
+  
+  // Always include a range of years (2024-2027) even if no data exists
+  const currentYear = new Date().getFullYear();
+  for (let year = currentYear - 1; year <= currentYear + 1; year++) {
+    yearSet.add(year);
+  }
+  
+  const yearArray = Array.from(yearSet).sort((a, b) => b - a); // Sort descending (latest first)
+  return yearArray.map((year) => ({
+    label: String(year),
+    value: year,
+  }));
+}
+
+export function filterRowsByYear(rows = [], year) {
+  if (!year) return rows;
+  const targetYear = String(year);
+  return rows.filter((row) => {
+    const rowYear = String(row?.year || '');
+    return rowYear === targetYear;
+  });
+}

@@ -1,9 +1,15 @@
 // Meta Ads service helpers
 // Each account has its own webhook that returns aggregated monthly data
-import API_CONFIG from '../config/apiConfig';
 
 // Account webhook URLs (one per account)
-const ACCOUNT_WEBHOOKS = API_CONFIG.META_ADS_WEBHOOKS;
+const ACCOUNT_WEBHOOKS = {
+  'MFE - BEAUTY': 'https://n8n.aiclinicgenius.com/webhook/Meta_Ads_part1',
+  'MFE - FOOD': 'https://n8n.aiclinicgenius.com/webhook/mfe-food',
+  'MFE - RECREATION': 'https://n8n.aiclinicgenius.com/webhook/mfe-recreation',
+  'MFE - HOME': 'https://n8n.aiclinicgenius.com/webhook/mfe-home',
+  'MFE - PET': 'https://n8n.aiclinicgenius.com/webhook/mfe-pet',
+  'MFE - FINANCIAL': 'https://n8n.aiclinicgenius.com/webhook/mfe_financial',
+};
 
 export const isDeltaConfigured = () => true; // Delta webhook configured at Refresh_Hook
 
@@ -108,7 +114,7 @@ export async function fetchMetaAdsForAccount(accountName) {
 
 // Fetch delta (updated rows only) from n8n Refresh_Hook
 export async function fetchDeltaMetaAds() {
-  const url = API_CONFIG.REFRESH_HOOK;
+  const url = 'https://n8n.aiclinicgenius.com/webhook/Refresh_Hook';
   console.info(`[MetaAds] Fetching delta from ${url}`);
   const data = await fetchJson(url);
   return {
