@@ -14,6 +14,9 @@ import {
   Legend
 } from 'recharts';
 import '../../Dashboard.css';
+import '../../NewLayout.css';
+import '../../AnalyticsDashboard.css';
+import './GoogleAdsAccountView.css';
 
 const GOOGLE_ADS_WEBHOOK = process.env.REACT_APP_GOOGLE_ADS_WEBHOOK || 'https://n8n.aiclinicgenius.com/webhook/Google_Ads';
 
@@ -304,10 +307,10 @@ function GoogleAds() {
 
   const renderTable = (tableRows) => {
     if (!tableRows.length) {
-      return <p className="google-ads-note">No rows for the selected filters.</p>;
+      return <p className="muted">No rows for the selected filters.</p>;
     }
     return (
-      <div className="meta-ads-table google-ads-table">
+      <div className="meta-ads-table">
         <div className="table-scroll">
           <table>
             <thead>
@@ -355,31 +358,30 @@ function GoogleAds() {
   };
 
   return (
-    <div className="meta-ads-page google-ads-page">
-      <div className="google-ads-header">
+    <div id="google-ads-root" className="meta-ads-page">
+      <div className="meta-ads-header">
         <div>
           <h2>Google Ads</h2>
-          <p className="google-ads-subtitle">Standalone Google Ads workspace with account and campaign views</p>
+          <p className="meta-ads-subtitle">Standalone Google Ads workspace with account and campaign views</p>
         </div>
-        <div className="google-ads-pill">Live</div>
       </div>
 
-      <div className="google-ads-controls">
-        <div className="google-ads-view-toggle">
+      <div className="meta-ads-filters">
+        <div className="period-selector">
           <button
-            className={`google-ads-view-btn ${activeView === 'account' ? 'active' : ''}`}
+            className={`period-btn ${activeView === 'account' ? 'active' : ''}`}
             onClick={() => setActiveView('account')}
           >
             Account View
           </button>
           <button
-            className={`google-ads-view-btn ${activeView === 'campaign' ? 'active' : ''}`}
+            className={`period-btn ${activeView === 'campaign' ? 'active' : ''}`}
             onClick={() => setActiveView('campaign')}
           >
             Campaign View
           </button>
         </div>
-        <div className="google-ads-actions">
+        <div className="meta-ads-actions">
           {lastUpdatedLabel && <span className="data-freshness">Updated {lastUpdatedLabel}</span>}
           <button className="refresh-button" onClick={fetchData} disabled={loading}>
             {loading ? 'Loading…' : 'Refresh'}
@@ -389,8 +391,8 @@ function GoogleAds() {
 
       {error && <div className="meta-ads-error">{error}</div>}
 
-      <div className="google-ads-filters">
-        <div className="google-ads-filter">
+      <div className="meta-ads-filters">
+        <div className="meta-ads-filter">
           <label htmlFor="ga-timewindow">Time Range</label>
           <select
             id="ga-timewindow"
@@ -406,7 +408,7 @@ function GoogleAds() {
         </div>
 
         {activeView === 'campaign' && (
-          <div className="google-ads-filter">
+          <div className="meta-ads-filter">
             <label htmlFor="ga-campaign">Campaign</label>
             <select
               id="ga-campaign"
@@ -425,49 +427,49 @@ function GoogleAds() {
 
       {activeView === 'account' && (
         <>
-          <div className="google-ads-card">
+          <div className="meta-ads-card">
             <h3>Account Totals ({selectedTimewindow})</h3>
-            <div className="google-ads-stats-grid">
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('impressions', 'Impressions')}</span>
-                <strong>{formatNumber(accountTotals.impressions)}</strong>
+            <div className="stats-grid">
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('impressions', 'Impressions')}</span>
+                <strong className="stat-value">{formatNumber(accountTotals.impressions)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('clicks', 'Clicks')}</span>
-                <strong>{formatNumber(accountTotals.clicks)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('clicks', 'Clicks')}</span>
+                <strong className="stat-value">{formatNumber(accountTotals.clicks)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('conversions', 'Conversions')}</span>
-                <strong>{formatNumber(accountTotals.conversions)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('conversions', 'Conversions')}</span>
+                <strong className="stat-value">{formatNumber(accountTotals.conversions)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('cost', 'Spend')}</span>
-                <strong>{formatMoney(accountTotals.cost)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('cost', 'Spend')}</span>
+                <strong className="stat-value">{formatMoney(accountTotals.cost)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('ctr', 'CTR')}</span>
-                <strong>{formatPercent(accountTotals.ctr)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('ctr', 'CTR')}</span>
+                <strong className="stat-value">{formatPercent(accountTotals.ctr)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('cvr', 'CVR')}</span>
-                <strong>{formatPercent(accountTotals.cvr)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('cvr', 'CVR')}</span>
+                <strong className="stat-value">{formatPercent(accountTotals.cvr)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('avg_cpc', 'Avg CPC')}</span>
-                <strong>{formatMoney(accountTotals.avg_cpc)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('avg_cpc', 'Avg CPC')}</span>
+                <strong className="stat-value">{formatMoney(accountTotals.avg_cpc)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('cpa', 'CPA')}</span>
-                <strong>{formatMoney(accountTotals.cpa)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('cpa', 'CPA')}</span>
+                <strong className="stat-value">{formatMoney(accountTotals.cpa)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('cpm', 'CPM')}</span>
-                <strong>{formatMoney(accountTotals.cpm)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('cpm', 'CPM')}</span>
+                <strong className="stat-value">{formatMoney(accountTotals.cpm)}</strong>
               </div>
             </div>
           </div>
 
-          <div className="google-ads-card">
+          <div className="meta-ads-card">
             <div className="table-header collapsible">
               <span>Campaign Conversions</span>
               <button
@@ -479,194 +481,128 @@ function GoogleAds() {
               </button>
             </div>
             {showConvChart && (
-              <div className="google-ads-chart">
-                {campaignAgg.length === 0 && <p className="google-ads-note">No data for this time range.</p>}
+              <div style={{ padding: '12px 0' }}>
+                {campaignAgg.length === 0 && <p className="muted">No data for this time range.</p>}
                 {campaignAgg.map((c) => (
-                  <div key={c.campaign} className="google-ads-bar-row">
-                    <div className="google-ads-bar-label">{c.campaign}</div>
-                    <div className="google-ads-bar-track" aria-label={`${c.conversions} conversions`}>
+                  <div key={c.campaign} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', fontSize: '13px' }}>
+                    <div style={{ flex: '0 0 140px', color: '#2c3e50', fontWeight: '500' }}>{c.campaign}</div>
+                    <div style={{ flex: 1, height: '20px', background: '#f0f4f8', borderRadius: '4px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
                       <div
-                        className="google-ads-bar-fill"
-                        style={{ width: `${Math.min(100, (c.conversions / maxConv) * 100)}%` }}
+                        style={{ height: '100%', background: '#4f46e5', width: `${Math.min(100, (c.conversions / maxConv) * 100)}%`, transition: 'width 0.3s ease' }}
                       />
                     </div>
-                    <div className="google-ads-bar-value">{formatNumber(c.conversions)} conv</div>
+                    <div style={{ flex: '0 0 100px', textAlign: 'right', fontWeight: '600', color: '#0f1724' }}>{formatNumber(c.conversions)} conv</div>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="google-ads-card">
+          <div className="meta-ads-card">
             <div className="table-header">Campaign Breakdown</div>
             {renderTable(timeFilteredRows)}
           </div>
 
-          <div className="google-ads-card google-ads-bottom-charts">
-            <div className="google-ads-bottom-grid">
-              <div className="google-ads-bottom-chart">
-                <div className="table-header collapsible">
-                  <span>Spend Share (Pie)</span>
-                  <button
-                    className="collapse-btn"
-                    onClick={() => setShowPieLegend((v) => !v)}
-                    aria-expanded={showPieLegend}
-                  >
-                    {showPieLegend ? 'Hide Legend' : 'Show Legend'}
-                  </button>
-                </div>
-                {pieSegments.length === 0 ? (
-                  <p className="google-ads-note">No spend data for this range.</p>
-                ) : (
-                  <div className="google-ads-pie-wrap">
-                    <ResponsiveContainer width="220" height="220">
-                      <PieChart>
-                        <Pie
-                          dataKey="value"
-                          data={pieSegments}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={90}
-                          innerRadius={45}
-                          paddingAngle={2}
-                        >
-                          {pieSegments.map((entry, index) => (
-                            <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(val) => formatMoney(val)} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    {showPieLegend && (
-                      <div className="google-ads-legend legend-scroll">
-                        {pieSegments.map((seg) => {
-                          const pct = spendTotal ? ((seg.value / spendTotal) * 100).toFixed(1) : '0.0';
-                          return (
-                            <div key={seg.name} className="legend-row">
-                              <span className="legend-swatch" style={{ background: seg.fill }} />
-                              <span className="legend-label">{seg.name}</span>
-                              <span className="legend-value">{pct}%</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="google-ads-bottom-chart">
-                <div className="table-header">Spend, CTR, Conversions (3yr trend)</div>
-                {trendData.every((d) => !d.spend && !d.conversions) ? (
-                  <p className="google-ads-note">No trend data available.</p>
-                ) : (
-                  <div style={{ width: '100%', height: 320, maxWidth: '700px', margin: '0 auto' }}>
-                    <ResponsiveContainer>
-                      <ComposedChart data={trendData} margin={{ top: 12, right: 24, left: 12, bottom: 60 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="window" 
-                          angle={-45} 
-                          textAnchor="end" 
-                          height={80}
-                          tick={{ fontSize: 10 }}
-                          interval={0}
-                        />
-                        <YAxis yAxisId="left" scale="log" domain={['auto', 'auto']} tickFormatter={(v) => formatNumber(v)} />
-                        <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `${v.toFixed(1)}%`} />
-                        <Tooltip
-                          formatter={(value, name) => {
-                            if (name === 'Spend') return formatMoney(value);
-                            if (name === 'CTR') return `${Number(value).toFixed(2)}%`;
-                            if (name === 'Conversions') return formatNumber(value);
-                            return value;
-                          }}
-                          labelFormatter={(label) => `Time Window: ${label}`}
-                        />
-                        <Legend />
-                        <Bar
-                          yAxisId="left"
-                          dataKey="spend"
-                          name="Spend"
-                          barSize={18}
-                          fill="#4f46e5"
-                          radius={[6, 6, 6, 6]}
-                        />
-                        <Line
-                          yAxisId="right"
-                          type="monotone"
-                          dataKey="ctr"
-                          name="CTR"
-                          stroke="#06b6d4"
-                          strokeWidth={2}
-                          dot={{ r: 3 }}
-                          activeDot={{ r: 5 }}
-                        />
-                        <Line
-                          yAxisId="left"
-                          type="monotone"
-                          dataKey="conversions"
-                          name="Conversions"
-                          stroke="#f59e0b"
-                          strokeWidth={2}
-                          dot={{ r: 3 }}
-                          activeDot={{ r: 5 }}
-                        />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </div>
+          <div className="meta-ads-card">
+            <div className="table-header collapsible">
+              <span>Spend Share (Pie)</span>
+              <button
+                className="collapse-btn"
+                onClick={() => setShowPieLegend((v) => !v)}
+                aria-expanded={showPieLegend}
+              >
+                {showPieLegend ? 'Hide Legend' : 'Show Legend'}
+              </button>
             </div>
+            {pieSegments.length === 0 ? (
+              <p className="muted">No spend data for this range.</p>
+            ) : (
+              <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                <div style={{ width: '220px', height: '220px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        dataKey="value"
+                        data={pieSegments}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={90}
+                        innerRadius={45}
+                        paddingAngle={2}
+                      >
+                        {pieSegments.map((entry, index) => (
+                          <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(val) => formatMoney(val)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                {showPieLegend && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto', paddingRight: '10px' }}>
+                    {pieSegments.map((seg) => {
+                      const pct = spendTotal ? ((seg.value / spendTotal) * 100).toFixed(1) : '0.0';
+                      return (
+                        <div key={seg.name} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                          <span style={{ width: '12px', height: '12px', borderRadius: '2px', background: seg.fill, flexShrink: 0 }} />
+                          <span style={{ flex: 1, color: '#2c3e50' }}>{seg.name}</span>
+                          <span style={{ fontWeight: '600', color: '#0f1724' }}>{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </>
       )}
 
       {activeView === 'campaign' && (
         <>
-          <div className="google-ads-card">
+          <div className="meta-ads-card">
             <h3>Campaign Metrics: {selectedCampaign} ({selectedTimewindow})</h3>
-            <div className="google-ads-stats-grid">
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('impressions', 'Impressions')}</span>
-                <strong>{formatNumber(campaignTotals.impressions)}</strong>
+            <div className="stats-grid">
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('impressions', 'Impressions')}</span>
+                <strong className="stat-value">{formatNumber(campaignTotals.impressions)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('clicks', 'Clicks')}</span>
-                <strong>{formatNumber(campaignTotals.clicks)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('clicks', 'Clicks')}</span>
+                <strong className="stat-value">{formatNumber(campaignTotals.clicks)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('conversions', 'Conversions')}</span>
-                <strong>{formatNumber(campaignTotals.conversions)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('conversions', 'Conversions')}</span>
+                <strong className="stat-value">{formatNumber(campaignTotals.conversions)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('cost', 'Spend')}</span>
-                <strong>{formatMoney(campaignTotals.cost)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('cost', 'Spend')}</span>
+                <strong className="stat-value">{formatMoney(campaignTotals.cost)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('ctr', 'CTR')}</span>
-                <strong>{formatPercent(campaignTotals.ctr)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('ctr', 'CTR')}</span>
+                <strong className="stat-value">{formatPercent(campaignTotals.ctr)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('cvr', 'CVR')}</span>
-                <strong>{formatPercent(campaignTotals.cvr)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('cvr', 'CVR')}</span>
+                <strong className="stat-value">{formatPercent(campaignTotals.cvr)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('avg_cpc', 'Avg CPC')}</span>
-                <strong>{formatMoney(campaignTotals.avg_cpc)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('avg_cpc', 'Avg CPC')}</span>
+                <strong className="stat-value">{formatMoney(campaignTotals.avg_cpc)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('cpa', 'CPA')}</span>
-                <strong>{formatMoney(campaignTotals.cpa)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('cpa', 'CPA')}</span>
+                <strong className="stat-value">{formatMoney(campaignTotals.cpa)}</strong>
               </div>
-              <div className="google-ads-stat-card">
-                <span className="label">{renderMetricLabel('cpm', 'CPM')}</span>
-                <strong>{formatMoney(campaignTotals.cpm)}</strong>
+              <div className="stat-item">
+                <span className="stat-label">{renderMetricLabel('cpm', 'CPM')}</span>
+                <strong className="stat-value">{formatMoney(campaignTotals.cpm)}</strong>
               </div>
             </div>
           </div>
 
-          <div className="google-ads-card">
+          <div className="meta-ads-card">
             <div className="table-header">Campaign Details</div>
             {renderTable(campaignFilteredRows)}
           </div>

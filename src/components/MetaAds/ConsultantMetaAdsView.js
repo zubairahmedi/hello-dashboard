@@ -1,4 +1,7 @@
 import React from 'react';
+import { Users, Calendar, Filter } from 'lucide-react';
+import { Card, StatCard } from '../UI/Card';
+import '../../NewAnalytics.css';
 import './MetaAdsAccountView.css';
 import {
   LineChart,
@@ -10,32 +13,10 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
+import { CHART_PALETTE } from '../../utils/chartColors';
 
 function ConsultantMetaAdsView({ data }) {
   console.log('[ConsultantMetaAdsView] Rendering with data:', data);
-
-  // Log detailed raw data structure for the first consultant
-  React.useMemo(() => {
-    if (data && data.length > 0) {
-      const first = data[0];
-      console.log('[ConsultantMetaAdsView] DETAILED RAW DATA - First Consultant:', {
-        name: first.assignedTo,
-        totalTaggedContacts: first.totalTaggedContacts,
-        countsByTimeWindow: first.countsByTimeWindow,
-        tagCountsByTimeWindow: first.tagCountsByTimeWindow
-      });
-      
-      // For each window, show what tags exist and their sum
-      ['30', '90', '150', '365'].forEach(window => {
-        if (first.tagCountsByTimeWindow?.[window]) {
-          console.log(`[ConsultantMetaAdsView] ${first.assignedTo} - All tags in window ${window}:`, first.tagCountsByTimeWindow[window]);
-          const sum = Object.values(first.tagCountsByTimeWindow[window]).reduce((a, b) => a + (typeof b === 'number' ? b : 0), 0);
-          const claimed = first.countsByTimeWindow[window];
-          console.log(`[ConsultantMetaAdsView] ${first.assignedTo} - Window ${window}: Sum of all tags: ${sum}, Claimed: ${claimed}, Diff: ${claimed - sum}`);
-        }
-      });
-    }
-  }, [data]);
 
   // Get all unique tags
   const allTags = React.useMemo(() => {
@@ -45,18 +26,12 @@ function ConsultantMetaAdsView({ data }) {
     data.forEach(consultant => {
       if (consultant.tagCountsByTimeWindow) {
         const timeWindows = Object.values(consultant.tagCountsByTimeWindow);
-        console.log(`[ConsultantMetaAdsView] ${consultant.assignedTo} - timeWindows:`, timeWindows);
         if (timeWindows.length > 0) {
-          Object.keys(timeWindows[0]).forEach(tag => {
-            console.log(`[ConsultantMetaAdsView] Adding tag: "${tag}"`);
-            tagsSet.add(tag);
-          });
+          Object.keys(timeWindows[0]).forEach(tag => tagsSet.add(tag));
         }
       }
     });
-    const sortedTags = Array.from(tagsSet).sort();
-    console.log('[ConsultantMetaAdsView] All unique tags found:', sortedTags);
-    return sortedTags;
+    return Array.from(tagsSet).sort();
   }, [data]);
 
   const timeWindows = ['30', '90', '150', '365'];
@@ -71,42 +46,19 @@ function ConsultantMetaAdsView({ data }) {
     const totalsByWindow = {};
     const totalsByTag = {};
     
-    console.log('[Totals Calculation] Starting with data:', { count: data.length, allTags });
-    
     timeWindows.forEach(window => {
-      totalsByWindow[window] = data.reduce((sum, c) => {
-        const val = c.countsByTimeWindow?.[window] || 0;
-        console.log(`[Totals] Adding ${c.assignedTo} window ${window}: ${val}`);
-        return sum + val;
-      }, 0);
-      console.log(`[Totals] Window ${window} total claimed: ${totalsByWindow[window]}`);
+      totalsByWindow[window] = data.reduce((sum, c) => sum + (c.countsByTimeWindow?.[window] || 0), 0);
     });
 
     allTags.forEach(tag => {
       totalsByTag[tag] = {};
       timeWindows.forEach(window => {
-        totalsByTag[tag][window] = data.reduce((sum, c) => {
-          const val = c.tagCountsByTimeWindow?.[window]?.[tag] || 0;
-          return sum + val;
-        }, 0);
+        totalsByTag[tag][window] = data.reduce((sum, c) => 
+          sum + (c.tagCountsByTimeWindow?.[window]?.[tag] || 0), 0
+        );
       });
-      console.log(`[Totals] Tag "${tag}":`, totalsByTag[tag]);
     });
 
-    console.log('[Totals Calculation] FINAL totals:', { totalContacts, totalsByWindow, totalsByTag });
-    
-    // DEBUG: For each consultant, compare claimed vs calculated
-    data.forEach(consultant => {
-      console.log(`[DATA VALIDATION] ${consultant.assignedTo}:`, {
-        totalTaggedContacts: consultant.totalTaggedContacts,
-        countsByTimeWindow: consultant.countsByTimeWindow,
-        tagCountsByTimeWindow: consultant.tagCountsByTimeWindow,
-        allTagsInWindow90: consultant.tagCountsByTimeWindow?.['90'] ? Object.entries(consultant.tagCountsByTimeWindow['90']).map(([k, v]) => `${k}: ${v}`).join(', ') : 'N/A',
-        sum90: consultant.tagCountsByTimeWindow?.['90'] ? Object.values(consultant.tagCountsByTimeWindow['90']).reduce((a, b) => a + b, 0) : 'N/A',
-        claimed90: consultant.countsByTimeWindow?.['90'],
-      });
-    });
-    
     return { totalContacts, totalsByWindow, totalsByTag };
   }, [data, allTags, timeWindows]);
 
@@ -133,8 +85,6 @@ function ConsultantMetaAdsView({ data }) {
     });
   }, [sortedConsultants]);
 
-  const lineColors = ['#667eea', '#4facfe', '#54a0ff', '#00d4ff', '#f093fb', '#ff9f43', '#26de81', '#a55eea'];
-
   // Expand/collapse state for rows (use assignedTo as key)
   const [expandedRows, setExpandedRows] = React.useState(() => new Set());
   const toggleRow = (key) => {
@@ -159,35 +109,22 @@ function ConsultantMetaAdsView({ data }) {
   }
 
   return (
-    <div className="consultant-meta-ads-view">
-      <div className="consultant-header">
-        <h3>Consultant Meta Ads Performance</h3>
-        <p className="muted">Tagged contacts by consultant and campaign over time windows</p>
+    <div className="analytics-dashboard">
+      <div className="consultant-header" style={{ marginBottom: '1.5rem' }}>
+        <h3 style={{ fontSize: '1.5rem', color: '#1e293b' }}>Consultant Meta Ads Performance</h3>
+        <p className="muted" style={{ fontSize: '0.9rem', color: '#64748b' }}>Tagged contacts by consultant and campaign over time windows</p>
       </div>
 
       {/* Summary KPIs */}
-      <div className="kpi-cards">
-        <div className="kpi-card">
-          <div className="kpi-label">Total Consultants</div>
-          <div className="kpi-value">{data.length}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Total Tagged Contacts</div>
-          <div className="kpi-value">{totals.totalContacts}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Last 90 Days</div>
-          <div className="kpi-value">{totals.totalsByWindow['90']}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Last 365 Days</div>
-          <div className="kpi-value">{totals.totalsByWindow['365']}</div>
-        </div>
+      <div className="analytics-grid kpi-row">
+        <StatCard label="Total Consultants" value={data.length} icon={Users} trend={0} trendLabel="active" />
+        <StatCard label="Total Tagged Contacts" value={totals.totalContacts} icon={Filter} trend={0} trendLabel="lifetime" />
+        <StatCard label="Last 90 Days" value={totals.totalsByWindow['90']} icon={Calendar} trend={0} trendLabel="leads" />
+        <StatCard label="Last 365 Days" value={totals.totalsByWindow['365']} icon={Calendar} trend={0} trendLabel="leads" />
       </div>
 
       {/* Leads Comparison Chart */}
-      <div className="table-section">
-        <h4>Consultant Leads by Time Window</h4>
+      <Card title="Consultant Leads by Time Window" className="chart-card wide">
         <div className="chart-wrapper">
           <ResponsiveContainer width="100%" height={360}>
             <LineChart data={chartData} margin={{ top: 12, right: 24, left: 0, bottom: 12 }}>
@@ -201,7 +138,7 @@ function ConsultantMetaAdsView({ data }) {
                   key={name}
                   type="monotone"
                   dataKey={name}
-                  stroke={lineColors[idx % lineColors.length]}
+                  stroke={CHART_PALETTE[idx % CHART_PALETTE.length]}
                   strokeWidth={2.4}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}
@@ -210,21 +147,20 @@ function ConsultantMetaAdsView({ data }) {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </Card>
 
       {/* Single Expandable Table */}
-      <div className="table-section">
-        <h4>Consultant Performance Overview</h4>
+      <Card title="Consultant Performance Overview" className="chart-card wide" style={{ marginTop: '20px' }}>
         <div className="table-scroll">
           <table className="meta-ads-table">
             <thead>
               <tr>
                 <th style={{ width: 40 }}></th>
                 <th>Consultant</th>
+                <th>Total Contacts</th>
                 {timeWindows.map(window => (
                   <th key={window}>{window}</th>
                 ))}
-                <th>Total Contacts</th>
               </tr>
             </thead>
             <tbody>
@@ -235,15 +171,6 @@ function ConsultantMetaAdsView({ data }) {
                 const hasShortWindowData = allTags.some(tag => 
                   shortWindows.some(w => (consultant.tagCountsByTimeWindow?.[w]?.[tag] || 0) > 0)
                 );
-                
-                // FIX: Calculate correct values from tags instead of using potentially incorrect countsByTimeWindow
-                const correctedCounts = {};
-                timeWindows.forEach(window => {
-                  correctedCounts[window] = allTags.reduce((sum, tag) =>
-                    sum + (consultant.tagCountsByTimeWindow?.[window]?.[tag] || 0), 0
-                  );
-                });
-                
                 return (
                   <React.Fragment key={key}>
                     <tr className={`consultant-row ${isExpanded ? 'expanded' : ''}`}>
@@ -257,10 +184,10 @@ function ConsultantMetaAdsView({ data }) {
                         </button>
                       </td>
                       <td style={{ fontWeight: '600', color: '#333' }}>{consultant.assignedTo}</td>
-                      {timeWindows.map(window => (
-                        <td key={window}>{correctedCounts[window]}</td>
-                      ))}
                       <td style={{ fontWeight: '600' }}>{consultant.totalTaggedContacts}</td>
+                      {timeWindows.map(window => (
+                        <td key={window}>{consultant.countsByTimeWindow?.[window] || 0}</td>
+                      ))}
                     </tr>
                     {isExpanded && (
                       <tr className="expanded-row">
@@ -271,36 +198,23 @@ function ConsultantMetaAdsView({ data }) {
                                 <table className="meta-ads-table subtable">
                                   <tbody>
                                     {allTags.map(tag => {
-                                      const hasData = timeWindows.some(window => 
+                                      const hasData = shortWindows.some(window => 
                                         (consultant.tagCountsByTimeWindow?.[window]?.[tag] || 0) > 0
                                       );
-                                      console.log(`[Expanded] ${consultant.assignedTo} - tag "${tag}": hasData=${hasData}`, {
-                                        tagData: consultant.tagCountsByTimeWindow ? Object.keys(consultant.tagCountsByTimeWindow).map(w => ({
-                                          window: w,
-                                          count: consultant.tagCountsByTimeWindow[w][tag]
-                                        })) : 'N/A'
-                                      });
-                                      if (!hasData) {
-                                        console.log(`[Expanded] SKIPPING tag "${tag}" for ${consultant.assignedTo}`);
-                                        return null;
-                                      }
+                                      if (!hasData) return null;
                                       return (
                                         <tr key={tag}>
-                                          <td></td>
-                                          <td style={{ fontWeight: '600', textTransform: 'capitalize', textAlign: 'left' }}>{tag}</td>
+                                          <td style={{ fontWeight: '600', textTransform: 'capitalize' }}>{tag}</td>
                                           {timeWindows.map(window => {
                                             const count = consultant.tagCountsByTimeWindow?.[window]?.[tag] || 0;
                                             return (
                                               <td key={window} style={{ 
-                                                background: count > 0 ? `rgba(102, 126, 234, ${Math.min(count / 20, 0.3)})` : 'transparent',
-                                                textAlign: 'center',
-                                                fontWeight: count > 0 ? '500' : 'normal'
+                                                background: count > 0 ? `rgba(102, 126, 234, ${Math.min(count / 20, 0.3)})` : 'transparent'
                                               }}>
                                                 {count}
                                               </td>
                                             );
                                           })}
-                                          <td></td>
                                         </tr>
                                       );
                                     })}
@@ -322,7 +236,7 @@ function ConsultantMetaAdsView({ data }) {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
     </div>
   );

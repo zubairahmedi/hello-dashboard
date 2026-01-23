@@ -1,23 +1,23 @@
 .data-viewer {
-  padding: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 0;
+  width: 100%;
 }
 
 .controls {
   display: flex;
   gap: 20px;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .data-info {
-  color: #0066cc;
-  font-weight: 500;
-  background: #f0f0f0;
-  padding: 4px 12px;
-  border-radius: 12px;
+  color: #2c5282;
+  font-weight: 600;
+  background: #ebf8ff;
+  padding: 6px 16px;
+  border-radius: 20px;
   font-size: 13px;
+  border: 1px solid #bee3f8;
 }
 
 .error-box {

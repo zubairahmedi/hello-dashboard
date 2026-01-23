@@ -1,0 +1,316 @@
+/* Google Ads Account View Styles */
+
+.google-ads-page {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: calc(100vh - 70px);
+}
+
+.google-ads-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.google-ads-header h2 {
+  margin: 0;
+  color: #1a202c;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.google-ads-subtitle {
+  margin: 4px 0 0 0;
+  color: #718096;
+  font-size: 14px;
+}
+
+/* Cards */
+.meta-ads-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.meta-ads-card h3 {
+  margin: 0 0 16px 0;
+  color: #1a202c;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Filters */
+.meta-ads-filters {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.meta-ads-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meta-ads-filter label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.meta-ads-filter select {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #2d3748;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.meta-ads-filter select:hover {
+  border-color: #a0aec0;
+}
+
+.meta-ads-filter select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* View Toggle Buttons */
+.period-selector {
+  display: flex;
+  gap: 8px;
+  background: white;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.period-btn {
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  color: #4a5568;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.period-btn:hover {
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+.period-btn.active {
+  background: #4f46e5;
+  color: white;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  border-left: 4px solid #4f46e5;
+  transition: all 0.2s;
+}
+
+.stat-item:hover {
+  background: #f3f4f6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Tables */
+.meta-ads-table {
+  margin-top: 12px;
+}
+
+.table-header {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.table-header.collapsible {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.collapse-btn {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  transition: color 0.2s;
+}
+
+.collapse-btn:hover {
+  color: #3f39e8;
+}
+
+.table-scroll {
+  max-height: 400px;
+  overflow: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+}
+
+.meta-ads-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.meta-ads-table th,
+.meta-ads-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f3f4f6;
+  text-align: left;
+}
+
+.meta-ads-table th {
+  background: #2c5282 !important;
+  font-weight: 700 !important;
+  color: white !important;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.meta-ads-table tr:hover {
+  background: #fafbfc;
+}
+
+.meta-ads-table td {
+  color: #6b7280;
+}
+
+/* Charts */
+.metric-abbr {
+  border-bottom: 1px dotted #4f46e5;
+  cursor: help;
+  color: inherit;
+  text-decoration: none;
+}
+
+.muted {
+  color: #9ca3af;
+  font-size: 14px;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Data Freshness */
+.data-freshness {
+  font-size: 12px;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Actions */
+.meta-ads-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.refresh-button {
+  padding: 8px 14px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.refresh-button:hover:not(:disabled) {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+.refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Error and Status Messages */
+.meta-ads-error {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.meta-ads-status {
+  background: #dbeafe;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}

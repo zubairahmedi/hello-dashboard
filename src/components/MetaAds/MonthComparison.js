@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
+import { Card } from '../UI/Card';
+import '../../NewAnalytics.css';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, Cell, PieChart, Pie
 } from 'recharts';
-
-const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00d4ff', '#54a0ff'];
+import { CHART_PALETTE } from '../../utils/chartColors';
 
 function MonthComparison({ data, accountName, monthOptions }) {
   const [selectedMonths, setSelectedMonths] = useState([]);
@@ -121,123 +122,130 @@ function MonthComparison({ data, accountName, monthOptions }) {
   }, [comparisonData]);
 
   return (
-    <div className="month-comparison-section">
-      <div className="comparison-header">
-        <h3>Month Comparison</h3>
-        <p className="comparison-subtitle">Compare performance metrics across multiple months</p>
+    <div className="analytics-dashboard">
+      <div className="consultant-header" style={{ marginBottom: '1.5rem' }}>
+        <h3 style={{ fontSize: '1.5rem', color: '#1e293b' }}>Month Comparison</h3>
+        <p className="muted" style={{ fontSize: '0.9rem', color: '#64748b' }}>Compare performance metrics across multiple months</p>
       </div>
 
       {/* Month Selection */}
-      <div className="comparison-controls">
-        <label>Select months to compare:</label>
-        <div className="month-dropdown-wrapper">
-          <button
-            className="month-dropdown-trigger"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          >
-            <span>
-              {selectedMonths.length === 0
-                ? 'Choose months...'
-                : `${selectedMonths.length} month${selectedMonths.length !== 1 ? 's' : ''} selected`}
-            </span>
-            <span className="dropdown-arrow">{isDropdownOpen ? '▲' : '▼'}</span>
-          </button>
+      <Card className="chart-card wide" style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem' }}>
+          <label style={{ fontWeight: 500, color: '#4a5568' }}>Select months to compare:</label>
+          <div className="month-dropdown-wrapper" style={{ position: 'relative' }}>
+            <button
+              className="month-dropdown-trigger period-btn"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              style={{ border: '1px solid #e2e8f0', minWidth: '200px', display: 'flex', justifyContent: 'space-between' }}
+            >
+              <span>
+                {selectedMonths.length === 0
+                  ? 'Choose months...'
+                  : `${selectedMonths.length} month${selectedMonths.length !== 1 ? 's' : ''} selected`}
+              </span>
+              <span className="dropdown-arrow">{isDropdownOpen ? '▲' : '▼'}</span>
+            </button>
 
-          {isDropdownOpen && (
-            <div className="month-dropdown-menu">
-              {availableMonths.map(month => (
-                <label key={month.key} className="month-dropdown-item">
-                  <input
-                    type="checkbox"
-                    checked={selectedMonths.includes(month.key)}
-                    onChange={() => toggleMonth(month.key)}
-                    className="month-checkbox"
-                  />
-                  <span className="checkmark"></span>
-                  <span className="month-label">{month.label}</span>
-                </label>
-              ))}
-            </div>
-          )}
+            {isDropdownOpen && (
+              <div className="month-dropdown-menu" style={{ 
+                position: 'absolute', 
+                top: '100%', 
+                left: 0, 
+                backgroundColor: 'white', 
+                border: '1px solid #e2e8f0', 
+                borderRadius: '8px', 
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)', 
+                padding: '0.5rem', 
+                zIndex: 50, 
+                minWidth: '200px',
+                marginTop: '0.5rem'
+              }}>
+                {availableMonths.map(month => (
+                  <label key={month.key} className="month-dropdown-item" style={{ display: 'flex', alignItems: 'center', padding: '0.5rem', cursor: 'pointer', gap: '0.5rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedMonths.includes(month.key)}
+                      onChange={() => toggleMonth(month.key)}
+                      className="month-checkbox"
+                    />
+                    <span className="month-label" style={{ fontSize: '0.9rem' }}>{month.label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </Card>
 
       {selectedMonths.length >= 2 ? (
         <>
           {/* Charts */}
-          <div className="comparison-charts">
+          <div className="analytics-grid" style={{ marginBottom: 0 }}>
             {/* Spend Comparison */}
-            <div className="comparison-chart-wrapper">
-              <h4>Spend by Month</h4>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartDataByMetric.spend}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                  <Bar dataKey="spend" fill="#667eea" name="Spend" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <Card title="Spend by Month" className="chart-card">
+              <div className="chart-wrapper">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartDataByMetric.spend}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e3e6f0" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                    <Bar dataKey="spend" fill="#667eea" name="Spend" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
 
             {/* Leads Comparison */}
-            <div className="comparison-chart-wrapper">
-              <h4>Leads by Month</h4>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartDataByMetric.leads}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="leads" fill="#764ba2" name="Leads" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <Card title="Leads by Month" className="chart-card">
+              <div className="chart-wrapper">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartDataByMetric.leads}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e3e6f0" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Bar dataKey="leads" fill="#764ba2" name="Leads" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
 
             {/* Impressions Comparison */}
-            <div className="comparison-chart-wrapper">
-              <h4>Impressions by Month</h4>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={chartDataByMetric.impressions}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ month, impressions }) => `${month} (${impressions.toLocaleString()})`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="impressions"
-                  >
-                    {chartDataByMetric.impressions.map((entry, idx) => (
-                      <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => value.toLocaleString()} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <Card title="Impressions by Month" className="chart-card">
+              <div className="chart-wrapper">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartDataByMetric.impressions}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e3e6f0" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip formatter={(value) => value.toLocaleString()} />
+                    <Bar dataKey="impressions" fill="#4facfe" name="Impressions" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
 
             {/* CPL Comparison */}
-            <div className="comparison-chart-wrapper">
-              <h4>Cost Per Lead by Month</h4>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartDataByMetric.cpl}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                  <Bar dataKey="cpl" fill="#f093fb" name="CPL" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <Card title="Cost Per Lead by Month" className="chart-card">
+              <div className="chart-wrapper">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartDataByMetric.cpl}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e3e6f0" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                    <Bar dataKey="cpl" fill="#f093fb" name="CPL" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
           </div>
 
           {/* Comparison Table */}
-          <div className="comparison-table-section">
-            <h4>Monthly Comparison</h4>
+          <Card title="Detailed Month Comparison" className="chart-card wide" style={{ marginTop: '20px' }}>
             <div className="table-scroll">
-              <table className="comparison-table">
+              <table className="meta-ads-table">
                 <thead>
                   <tr>
                     <th>Month</th>
@@ -254,7 +262,7 @@ function MonthComparison({ data, accountName, monthOptions }) {
                 <tbody>
                   {tableData.map((row, idx) => (
                     <tr key={idx}>
-                      <td>{row.month}</td>
+                      <td style={{ fontWeight: 500 }}>{row.month}</td>
                       <td>${row.spend.toFixed(2)}</td>
                       <td>{row.leads}</td>
                       <td>${row.cpl.toFixed(2)}</td>
@@ -268,12 +276,15 @@ function MonthComparison({ data, accountName, monthOptions }) {
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
         </>
       ) : (
-        <div className="comparison-empty">
-          <p className="muted">Select at least 2 months to view comparison charts and table</p>
-        </div>
+        <Card className="chart-card wide" style={{ marginTop: '20px', padding: '2rem', textAlign: 'center' }}>
+          <div className="no-selection-placeholder">
+            <h4 style={{ color: '#64748b', fontSize: '1.1rem', marginBottom: '0.5rem' }}>Select at least 2 months to compare</h4>
+            <p className="muted" style={{ color: '#94a3b8' }}>Use the dropdown above to choose months</p>
+          </div>
+        </Card>
       )}
     </div>
   );

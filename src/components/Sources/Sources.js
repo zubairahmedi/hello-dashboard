@@ -1,5 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  ResponsiveContainer, 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  PieChart, 
+  Pie, 
+  Cell,
+  Legend 
+} from 'recharts';
+import { Database, TrendingUp, Award, Search, ArrowUpDown, Zap } from 'lucide-react';
 import './Sources.css';
+import API_CONFIG from '../../config/apiConfig';
 import {
   initDB,
   getData,
@@ -7,9 +22,25 @@ import {
   getDataFreshnessMessage
 } from '../../utils/indexedDbService';
 import exportNodeAsPdf from '../../utils/pdfExport';
+import { SOURCE_TYPE_COLORS } from '../../utils/chartColors';
 
 const SOURCES_CACHE_KEY = 'sourcesData';
-const SOURCES_WEBHOOK_URL = 'https://n8n.aiclinicgenius.com/webhook/abb37c74-5acd-44cf-9c38-981d4692ea4a';
+const SOURCES_WEBHOOK_URL = API_CONFIG.SOURCES_WEBHOOK;
+
+// Source type categorization
+const categorizeSource = (sourceName) => {
+  const name = sourceName.toLowerCase();
+  if (name.includes('facebook') || name.includes('google') || name.includes('ads') || name.includes('meta') || name.includes('bing')) {
+    return 'Paid';
+  }
+  if (name.includes('referral') || name.includes('organic') || name.includes('direct') || name.includes('seo')) {
+    return 'Organic';
+  }
+  if (name.includes('franchise') || name.includes('bizbuysell') || name.includes('marketplace') || name.includes('franchise gator') || name.includes('franchise direct')) {
+    return 'Marketplace';
+  }
+  return 'Other';
+};
 
 function Sources() {
   const [data, setData] = useState(null);
@@ -19,6 +50,19 @@ function Sources() {
   const [isCached, setIsCached] = useState(false);
   const [selectedConsultant, setSelectedConsultant] = useState('all');
   const [selectedTimePeriod, setSelectedTimePeriod] = useState('last30Days');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: 'count', direction: 'desc' });
+
+  // Time periods configuration matching Analytics Dashboard
+  const timePeriods = [
+    { value: 'last7Days', label: '7 Days' },
+    { value: 'last14Days', label: '14 Days' },
+    { value: 'last30Days', label: '30 Days' },
+    { value: 'last2Months', label: '2 Months' },
+    { value: 'last3Months', label: '3 Months' },
+    { value: 'last6Months', label: '6 Months' },
+    { value: 'last1Year', label: '1 Year' }
+  ];
 
   // Initialize IndexedDB and load cached data on mount
   useEffect(() => {
@@ -103,134 +147,142 @@ function Sources() {
     })).sort((a, b) => a.name.localeCompare(b.name));
   };
 
-  // Get time period label
-  const getTimePeriodLabel = (period) => {
-    const labels = {
-      last7Days: 'Last 7 Days',
-      last14Days: 'Last 14 Days',
-      last30Days: 'Last 30 Days',
-      last2Months: 'Last 2 Months',
-      last3Months: 'Last 3 Months',
-      last6Months: 'Last 6 Months',
-      last1Year: 'Last 1 Year'
-    };
-    return labels[period] || period;
-  };
-
-  // Get filtered data based on selections
-  const getFilteredSources = () => {
+  // Get aggregated sources (combined across consultants if "all" is selected)
+  const getAggregatedSources = useMemo(() => {
     if (!data || !Array.isArray(data)) return [];
 
     let consultantsToShow = data;
     
-    // Filter by consultant
     if (selectedConsultant !== 'all') {
       consultantsToShow = data.filter(item => item.consultant_id === selectedConsultant);
     }
 
-    // Extract sources from the selected time period
-    const sources = [];
+    // Aggregate sources by source name
+    const aggregated = {};
     consultantsToShow.forEach(consultant => {
       const periodData = consultant[selectedTimePeriod];
       if (periodData && typeof periodData === 'object') {
         Object.entries(periodData).forEach(([sourceName, count]) => {
-          sources.push({
-            consultant: consultant.consultant_name,
-            source: sourceName,
-            count: count
-          });
+          if (!aggregated[sourceName]) {
+            aggregated[sourceName] = { source: sourceName, count: 0, type: categorizeSource(sourceName) };
+          }
+          aggregated[sourceName].count += count;
         });
       }
     });
 
-    return sources.sort((a, b) => b.count - a.count);
-  };
+    return Object.values(aggregated).sort((a, b) => b.count - a.count);
+  }, [data, selectedConsultant, selectedTimePeriod]);
 
-  // Calculate total count
-  const getTotalCount = () => {
-    const sources = getFilteredSources();
-    return sources.reduce((sum, item) => sum + item.count, 0);
-  };
-
-  // Get aggregated sources (combined across consultants if "all" is selected)
-  const getAggregatedSources = () => {
-    const sources = getFilteredSources();
+  // Calculate KPI metrics
+  const kpiMetrics = useMemo(() => {
+    const sources = getAggregatedSources;
+    const totalSources = sources.length;
+    const totalLeads = sources.reduce((sum, s) => sum + s.count, 0);
     
-    if (selectedConsultant !== 'all') {
-      // Show individual sources for a specific consultant
-      return sources;
+    // Top source by volume
+    const topSource = sources[0] || { source: 'N/A', count: 0 };
+    
+    // "Most Efficient" - Highest average leads per source type (using marketplace as proxy for quality)
+    const marketplaceSources = sources.filter(s => s.type === 'Marketplace');
+    const organicSources = sources.filter(s => s.type === 'Organic');
+    
+    // Most improved: Compare to previous period (mock for now - would need historical data)
+    // For now, show the organic leader as "highest quality" since organic = free leads
+    const topOrganic = organicSources.sort((a, b) => b.count - a.count)[0] || { source: 'N/A', count: 0 };
+    
+    return {
+      totalSources,
+      totalLeads,
+      topSource,
+      topOrganic
+    };
+  }, [getAggregatedSources]);
+
+  // Top 10 sources for leaderboard
+  const topSources = useMemo(() => {
+    return getAggregatedSources.slice(0, 10);
+  }, [getAggregatedSources]);
+
+  // Source type breakdown for donut chart
+  const sourceTypeBreakdown = useMemo(() => {
+    const sources = getAggregatedSources;
+    const breakdown = { Organic: 0, Paid: 0, Marketplace: 0, Other: 0 };
+    
+    sources.forEach(s => {
+      breakdown[s.type] += s.count;
+    });
+
+    return Object.entries(breakdown)
+      .filter(([_, count]) => count > 0)
+      .map(([name, value]) => ({ name, value, color: SOURCE_TYPE_COLORS[name] }));
+  }, [getAggregatedSources]);
+
+  // Volume chart data (top 8 sources)
+  const volumeChartData = useMemo(() => {
+    return getAggregatedSources.slice(0, 8).map(s => ({
+      name: s.source.length > 15 ? s.source.substring(0, 15) + '...' : s.source,
+      fullName: s.source,
+      leads: s.count,
+      type: s.type
+    }));
+  }, [getAggregatedSources]);
+
+  // Filtered and sorted table data
+  const tableData = useMemo(() => {
+    let filtered = getAggregatedSources;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(s => 
+        s.source.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
-    // Aggregate sources by source name when showing all consultants
-    const aggregated = {};
-    sources.forEach(item => {
-      if (!aggregated[item.source]) {
-        aggregated[item.source] = 0;
-      }
-      aggregated[item.source] += item.count;
+    // Sort
+    const sorted = [...filtered].sort((a, b) => {
+      const aVal = sortConfig.key === 'source' ? a.source.toLowerCase() : a[sortConfig.key];
+      const bVal = sortConfig.key === 'source' ? b.source.toLowerCase() : b[sortConfig.key];
+      
+      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
     });
 
-    return Object.entries(aggregated)
-      .map(([source, count]) => ({ source, count }))
-      .sort((a, b) => b.count - a.count);
+    return sorted;
+  }, [getAggregatedSources, searchTerm, sortConfig]);
+
+  const handleSort = (key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc'
+    }));
   };
 
-  // Get top 5 sources for each consultant
-  const getTop5ByConsultant = () => {
-    if (!data || !Array.isArray(data)) return [];
+  const maxLeadCount = useMemo(() => {
+    return Math.max(...getAggregatedSources.map(s => s.count), 1);
+  }, [getAggregatedSources]);
 
-    return data.map(consultant => {
-      const periodData = consultant[selectedTimePeriod];
-      if (!periodData || typeof periodData !== 'object') {
-        return {
-          name: consultant.consultant_name,
-          sources: [],
-          total: 0,
-          maxCount: 0
-        };
-      }
-
-      const allSources = Object.entries(periodData)
-        .map(([sourceName, count]) => ({ source: sourceName, count }))
-        .sort((a, b) => b.count - a.count);
-      
-      const sources = allSources.slice(0, 5);
-      const total = allSources.reduce((sum, s) => sum + s.count, 0);
-      const maxCount = sources.length > 0 ? sources[0].count : 0;
-
-      return {
-        name: consultant.consultant_name,
-        sources,
-        total,
-        maxCount
-      };
-    });
+  // Custom tooltip for charts
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="sources-tooltip">
+          <p className="sources-tooltip-label">{payload[0].payload.fullName || label}</p>
+          <p className="sources-tooltip-value">{payload[0].value} leads</p>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
     <div id="sources-root" className="sources-container">
-      <div className="sources-header pdf-hide">
-        <div className="sources-title-section">
-          <h2>Sources</h2>
+      {/* Data Freshness Indicator */}
+      {dataFreshness && (
+        <div className="sources-freshness-badge pdf-hide">
+          {isCached ? '📦 ' : '✓ '}{dataFreshness}
         </div>
-        
-        <div className="sources-controls">
-          <button
-            className="sources-refresh-btn"
-            onClick={handleRefresh}
-            disabled={loading}
-          >
-            {loading ? '⟳ Loading...' : '↻ Refresh'}
-          </button>
-          <button
-            className="sources-export-btn"
-            onClick={handleExportPDF}
-            disabled={!data || loading}
-          >
-            📄 Export PDF
-          </button>
-        </div>
-      </div>
+      )}
 
       {error && (
         <div className="sources-error">
@@ -238,46 +290,39 @@ function Sources() {
         </div>
       )}
 
+      {/* Time Period Selector */}
       {data && Array.isArray(data) && data.length > 0 && (
-        <div className="sources-filters pdf-hide">
-          <div className="filter-group">
-            <label htmlFor="consultant-filter">Consultant:</label>
-            <select
-              id="consultant-filter"
-              value={selectedConsultant}
-              onChange={(e) => setSelectedConsultant(e.target.value)}
-              className="sources-select"
+        <div className="sources-period-selector pdf-hide">
+          {timePeriods.map(period => (
+            <button
+              key={period.value}
+              className={`sources-period-btn ${selectedTimePeriod === period.value ? 'active' : ''}`}
+              onClick={() => setSelectedTimePeriod(period.value)}
             >
-              <option value="all">All Consultants</option>
-              {getConsultants().map(consultant => (
-                <option key={consultant.id} value={consultant.id}>
-                  {consultant.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              {period.label}
+            </button>
+          ))}
+        </div>
+      )}
 
-          <div className="filter-group">
-            <label htmlFor="time-filter">Time Period:</label>
-            <select
-              id="time-filter"
-              value={selectedTimePeriod}
-              onChange={(e) => setSelectedTimePeriod(e.target.value)}
-              className="sources-select"
+      {/* Consultant Filter Pills */}
+      {data && Array.isArray(data) && data.length > 0 && (
+        <div className="sources-consultant-pills pdf-hide">
+          <button
+            className={`sources-pill ${selectedConsultant === 'all' ? 'active' : ''}`}
+            onClick={() => setSelectedConsultant('all')}
+          >
+            All Consultants
+          </button>
+          {getConsultants().map(consultant => (
+            <button
+              key={consultant.id}
+              className={`sources-pill ${selectedConsultant === consultant.id ? 'active' : ''}`}
+              onClick={() => setSelectedConsultant(consultant.id)}
             >
-              <option value="last7Days">Last 7 Days</option>
-              <option value="last14Days">Last 14 Days</option>
-              <option value="last30Days">Last 30 Days</option>
-              <option value="last2Months">Last 2 Months</option>
-              <option value="last3Months">Last 3 Months</option>
-              <option value="last6Months">Last 6 Months</option>
-              <option value="last1Year">Last 1 Year</option>
-            </select>
-          </div>
-
-          <div className="filter-summary">
-            <strong>Total Sources: {getTotalCount()}</strong>
-          </div>
+              {consultant.name}
+            </button>
+          ))}
         </div>
       )}
 
@@ -288,110 +333,233 @@ function Sources() {
           <p className="sources-empty">No sources data found.</p>
         ) : (
           <>
-            {/* Top 5 Sources by Consultant */}
-            <div className="sources-overview-section">
-              <h3 className="sources-section-title">
-                Top 5 Sources by Consultant - {getTimePeriodLabel(selectedTimePeriod)}
-              </h3>
-              <div className="sources-consultant-grid">
-                {getTop5ByConsultant().map((consultant, idx) => (
-                  <div key={idx} className="sources-consultant-card">
-                    <h4 className="sources-consultant-name">{consultant.name}</h4>
-                    
-                    <div className="sources-stats">
-                      <div className="sources-stat-item">
-                        <span className="sources-stat-label">Total Sources:</span>
-                        <span className="sources-stat-value">{consultant.total}</span>
-                      </div>
-                      <div className="sources-stat-item">
-                        <span className="sources-stat-label">Top 5 Total:</span>
-                        <span className="sources-stat-value">
-                          {consultant.sources.reduce((sum, s) => sum + s.count, 0)}
-                        </span>
-                      </div>
-                    </div>
+            {/* Row 1: KPI Cards */}
+            <div className="sources-kpi-row">
+              <div className="sources-kpi-card">
+                <div className="sources-kpi-icon" style={{ background: '#e0e7ff' }}>
+                  <Database size={20} color="#4f46e5" />
+                </div>
+                <div className="sources-kpi-content">
+                  <span className="sources-kpi-label">Active Sources</span>
+                  <span className="sources-kpi-value">{kpiMetrics.totalSources}</span>
+                </div>
+              </div>
 
-                    {consultant.sources.length === 0 ? (
-                      <div className="sources-no-data">No data available</div>
-                    ) : (
-                      <div className="sources-chart-container">
-                        {consultant.sources.map((source, sidx) => {
-                          const percentage = consultant.maxCount > 0 
-                            ? (source.count / consultant.maxCount) * 100 
-                            : 0;
-                          const totalPercentage = consultant.total > 0
-                            ? ((source.count / consultant.total) * 100).toFixed(1)
-                            : 0;
-                          
-                          return (
-                            <div key={sidx} className="sources-chart-row">
-                              <div className="sources-chart-label">
-                                <span className="sources-chart-rank">#{sidx + 1}</span>
-                                <span className="sources-chart-name" title={source.source}>
-                                  {source.source}
-                                </span>
-                              </div>
-                              <div className="sources-chart-bar-wrapper">
-                                <div 
-                                  className="sources-chart-bar" 
-                                  style={{ width: `${percentage}%` }}
-                                >
-                                  <span className="sources-chart-count">{source.count}</span>
-                                </div>
-                                <span className="sources-chart-percentage">{totalPercentage}%</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                ))}
+              <div className="sources-kpi-card">
+                <div className="sources-kpi-icon" style={{ background: '#dbeafe' }}>
+                  <TrendingUp size={20} color="#2563eb" />
+                </div>
+                <div className="sources-kpi-content">
+                  <span className="sources-kpi-label">Total Leads</span>
+                  <span className="sources-kpi-value">{kpiMetrics.totalLeads.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="sources-kpi-card">
+                <div className="sources-kpi-icon" style={{ background: '#fef3c7' }}>
+                  <Award size={20} color="#d97706" />
+                </div>
+                <div className="sources-kpi-content">
+                  <span className="sources-kpi-label">Top Source</span>
+                  <span className="sources-kpi-value sources-kpi-text">{kpiMetrics.topSource.source}</span>
+                  <span className="sources-kpi-subvalue">{kpiMetrics.topSource.count} leads</span>
+                </div>
+              </div>
+
+              <div className="sources-kpi-card">
+                <div className="sources-kpi-icon" style={{ background: '#d1fae5' }}>
+                  <Zap size={20} color="#059669" />
+                </div>
+                <div className="sources-kpi-content">
+                  <span className="sources-kpi-label">Top Organic Source</span>
+                  <span className="sources-kpi-value sources-kpi-text">{kpiMetrics.topOrganic.source}</span>
+                  <span className="sources-kpi-subvalue">{kpiMetrics.topOrganic.count} leads</span>
+                </div>
               </div>
             </div>
 
-            {/* Full Sources Table */}
-            <div className="sources-view-content">
-              <h3 className="sources-period-title">
-                {selectedConsultant === 'all' ? 'All Sources' : 'Detailed View'} - {getTimePeriodLabel(selectedTimePeriod)}
-                {selectedConsultant !== 'all' && 
-                  ` - ${getConsultants().find(c => c.id === selectedConsultant)?.name}`
-                }
+            {/* Row 2: Top Sources Leaderboard */}
+            <div className="sources-leaderboard-section">
+              <h3 className="sources-section-title">
+                Top 10 Lead Sources
+                {selectedConsultant !== 'all' && ` - ${getConsultants().find(c => c.id === selectedConsultant)?.name}`}
               </h3>
+              <div className="sources-leaderboard">
+                {topSources.map((source, idx) => {
+                  const percentage = (source.count / maxLeadCount) * 100;
+                  const totalPercentage = ((source.count / kpiMetrics.totalLeads) * 100).toFixed(1);
+                  
+                  return (
+                    <div key={idx} className="sources-leaderboard-row">
+                      <div className="sources-leaderboard-rank">
+                        <span className={`sources-rank-badge ${idx < 3 ? 'top-three' : ''}`}>
+                          #{idx + 1}
+                        </span>
+                      </div>
+                      <div className="sources-leaderboard-info">
+                        <span className="sources-leaderboard-name" title={source.source}>
+                          {source.source}
+                        </span>
+                        <span className={`sources-type-badge ${source.type.toLowerCase()}`}>
+                          {source.type}
+                        </span>
+                      </div>
+                      <div className="sources-leaderboard-bar-wrapper">
+                        <div 
+                          className="sources-leaderboard-bar"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      <div className="sources-leaderboard-stats">
+                        <span className="sources-leaderboard-count">{source.count}</span>
+                        <span className="sources-leaderboard-pct">{totalPercentage}%</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Row 3: Source Efficiency Charts */}
+            <div className="sources-charts-row">
+              {/* Volume Bar Chart */}
+              <div className="sources-chart-card sources-chart-large">
+                <h3 className="sources-section-title">Source Volume Comparison</h3>
+                <div className="sources-chart-wrapper">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={volumeChartData} layout="vertical" margin={{ left: 20, right: 30 }}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                      <XAxis type="number" />
+                      <YAxis 
+                        type="category" 
+                        dataKey="name" 
+                        width={120} 
+                        tick={{ fontSize: 12 }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar 
+                        dataKey="leads" 
+                        radius={[0, 4, 4, 0]}
+                        fill="#3182ce"
+                      >
+                        {volumeChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={SOURCE_TYPE_COLORS[entry.type]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Source Type Donut */}
+              <div className="sources-chart-card sources-chart-small">
+                <h3 className="sources-section-title">Source Type Breakdown</h3>
+                <div className="sources-chart-wrapper">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={sourceTypeBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={2}
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        labelLine={false}
+                      >
+                        {sourceTypeBreakdown.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => value.toLocaleString()} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="sources-type-legend">
+                  {sourceTypeBreakdown.map((type, idx) => (
+                    <div key={idx} className="sources-type-item">
+                      <span className="sources-type-dot" style={{ background: type.color }} />
+                      <span className="sources-type-name">{type.name}</span>
+                      <span className="sources-type-count">{type.value.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Row 4: Master Source Table */}
+            <div className="sources-table-section">
+              <div className="sources-table-header">
+                <h3 className="sources-section-title">All Sources</h3>
+                <div className="sources-search-wrapper">
+                  <Search size={18} className="sources-search-icon" />
+                  <input
+                    type="text"
+                    placeholder="Search sources..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="sources-search-input"
+                  />
+                </div>
+              </div>
+              
               <div className="sources-table-wrapper">
                 <table className="sources-table">
                   <thead>
                     <tr>
-                      {selectedConsultant === 'all' && <th>Source</th>}
-                      {selectedConsultant !== 'all' && (
-                        <>
-                          <th>Source</th>
-                          <th>Consultant</th>
-                        </>
-                      )}
-                      <th className="sources-count-header">Count</th>
+                      <th onClick={() => handleSort('source')} className="sortable">
+                        Source <ArrowUpDown size={14} />
+                      </th>
+                      <th onClick={() => handleSort('type')} className="sortable">
+                        Type <ArrowUpDown size={14} />
+                      </th>
+                      <th onClick={() => handleSort('count')} className="sortable sources-count-header">
+                        Leads <ArrowUpDown size={14} />
+                      </th>
+                      <th className="sources-bar-header">Volume</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {getAggregatedSources().length === 0 ? (
+                    {tableData.length === 0 ? (
                       <tr>
-                        <td colSpan={selectedConsultant === 'all' ? 2 : 3} className="sources-no-data">
-                          No sources found for this selection
+                        <td colSpan={4} className="sources-no-data">
+                          No sources found matching "{searchTerm}"
                         </td>
                       </tr>
                     ) : (
-                      getAggregatedSources().map((item, idx) => (
-                        <tr key={idx}>
-                          <td className="sources-name">{item.source}</td>
-                          {selectedConsultant !== 'all' && (
-                            <td>{item.consultant}</td>
-                          )}
-                          <td className="sources-count">{item.count}</td>
-                        </tr>
-                      ))
+                      tableData.map((item, idx) => {
+                        const barPercentage = (item.count / maxLeadCount) * 100;
+                        return (
+                          <tr key={idx}>
+                            <td className="sources-name">{item.source}</td>
+                            <td>
+                              <span className={`sources-type-badge ${item.type.toLowerCase()}`}>
+                                {item.type}
+                              </span>
+                            </td>
+                            <td className="sources-count">{item.count}</td>
+                            <td className="sources-bar-cell">
+                              <div className="sources-mini-bar-wrapper">
+                                <div 
+                                  className="sources-mini-bar" 
+                                  style={{ 
+                                    width: `${barPercentage}%`,
+                                    background: SOURCE_TYPE_COLORS[item.type]
+                                  }} 
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
+              </div>
+              <div className="sources-table-footer">
+                Showing {tableData.length} of {getAggregatedSources.length} sources
               </div>
             </div>
           </>

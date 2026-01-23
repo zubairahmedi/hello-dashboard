@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react';
+import { DollarSign, Users, Target, Eye, Activity, Percent } from 'lucide-react';
+import { Card, StatCard } from '../UI/Card';
+import '../../NewAnalytics.css';
+import './MetaAdsAccountView.css';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
-
-const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00d4ff', '#54a0ff'];
+import { CHART_PALETTE } from '../../utils/chartColors';
 
 function MetaAdsAccountView({ data, accountName }) {
   console.log('[MetaAdsAccountView] Rendering with props:', { accountName, dataLength: data?.length, data });
@@ -100,38 +103,19 @@ function MetaAdsAccountView({ data, accountName }) {
   }
 
   return (
-    <div className="meta-ads-account-view">
+    <div className="analytics-dashboard">
       {/* KPI Cards */}
-      <div className="kpi-cards">
-        <div className="kpi-card">
-          <div className="kpi-label">Total Spend</div>
-          <div className="kpi-value">${kpis.totalSpend}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Total Leads</div>
-          <div className="kpi-value">{kpis.totalLeads}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Avg CPL</div>
-          <div className="kpi-value">${kpis.avgCPL}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Total Impressions</div>
-          <div className="kpi-value">{kpis.totalImpressions.toLocaleString()}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Total Reach</div>
-          <div className="kpi-value">{kpis.totalReach.toLocaleString()}</div>
-        </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Avg Engagement Rate</div>
-          <div className="kpi-value">{kpis.avgEngagementRate}%</div>
-        </div>
+      <div className="analytics-grid kpi-row">
+        <StatCard label="Total Spend" value={`$${kpis.totalSpend}`} icon={DollarSign} trend={0} trendLabel="total" />
+        <StatCard label="Total Leads" value={kpis.totalLeads} icon={Users} trend={0} trendLabel="total" />
+        <StatCard label="Avg CPL" value={`$${kpis.avgCPL}`} icon={Target} trend={0} trendLabel="avg" />
+        <StatCard label="Impressions" value={kpis.totalImpressions.toLocaleString()} icon={Eye} trend={0} trendLabel="total" />
+        <StatCard label="Reach" value={kpis.totalReach.toLocaleString()} icon={Activity} trend={0} trendLabel="unique" />
+        <StatCard label="Avg Engagement" value={`${kpis.avgEngagementRate}%`} icon={Percent} trend={0} trendLabel="rate" />
       </div>
 
       {/* Comprehensive Data Table */}
-      <div className="table-section">
-        <h4>All Performance Data</h4>
+      <Card title="All Performance Data" className="chart-card wide">
         <div className="table-scroll">
           <table className="meta-ads-details-table">
             <thead>
@@ -216,7 +200,7 @@ function MetaAdsAccountView({ data, accountName }) {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

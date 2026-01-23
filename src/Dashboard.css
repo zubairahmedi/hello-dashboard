@@ -308,122 +308,51 @@
 .meta-ads-filters {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin: 20px 0;
-  padding: 16px;
-  background: linear-gradient(135deg, rgba(0, 102, 204, 0.03) 0%, rgba(0, 153, 255, 0.03) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(0, 102, 204, 0.1);
+  gap: 12px;
+  margin: 16px 0;
 }
 
 .meta-ads-tabs {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .meta-ads-tab {
-  padding: 11px 18px;
-  border: 1.5px solid rgba(0, 102, 204, 0.2);
-  border-radius: 9px;
+  padding: 10px 16px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 8px;
   background: #fff;
-  color: #0066cc;
+  color: #667eea;
   font-weight: 600;
-  font-size: 12px;
   cursor: pointer;
-  transition: all 200ms ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: all 150ms ease;
 }
 
 .meta-ads-tab.active {
-  background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.28);
 }
 
 .meta-ads-tab:hover:not(.active) {
-  background: #f0f4ff;
-  border-color: rgba(0, 102, 204, 0.3);
-  transform: translateY(-1px);
+  background: #f6f8ff;
 }
 
 .meta-ads-month-filter {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.meta-ads-month-filter label {
-  font-weight: 600;
-  color: #0f1724;
-  font-size: 12px;
+  gap: 8px;
 }
 
 .meta-ads-month-filter select {
-  padding: 9px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
-  border: 1.5px solid rgba(0, 102, 204, 0.2);
+  border: 1px solid #e5e7eb;
   background: #fff;
   font-weight: 600;
   color: #0f1724;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 200ms ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-}
-
-.meta-ads-month-filter select:hover,
-.meta-ads-month-filter select:focus {
-  border-color: #0066cc;
-  box-shadow: 0 4px 8px rgba(0, 102, 204, 0.12);
-  outline: none;
-}
-
-.yearly-year-filter {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, rgba(0, 102, 204, 0.05) 0%, rgba(0, 153, 255, 0.05) 100%);
-  border-radius: 9px;
-  border: 1px solid rgba(0, 102, 204, 0.15);
-}
-
-.yearly-year-filter label {
-  font-weight: 600;
-  color: #0f1724;
-  font-size: 12px;
-}
-
-.yearly-year-filter select {
-  padding: 9px 12px;
-  border-radius: 8px;
-  border: 1.5px solid rgba(0, 102, 204, 0.2);
-  background: #fff;
-  font-weight: 600;
-  color: #0f1724;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 200ms ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-}
-
-.yearly-year-filter select:hover,
-.yearly-year-filter select:focus {
-  border-color: #0066cc;
-  box-shadow: 0 4px 8px rgba(0, 102, 204, 0.12);
-  outline: none;
-}
-
-.comparison-header .yearly-year-filter {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0;
-  background: transparent;
-  border: none;
 }
 
 .meta-ads-table {
@@ -479,364 +408,5 @@
 
 .dashboard-nav h2 {
   color: #fff !important;
-}
-
-/* Google Ads landing page */
-.google-ads-page {
-  padding: 20px;
-  background: #f5f7fa;
-  min-height: calc(100vh - 70px);
-}
-
-.google-ads-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-
-.google-ads-subtitle {
-  margin: 4px 0 0 0;
-  color: #4b5563;
-  font-size: 14px;
-}
-
-.google-ads-pill {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 12px;
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
-}
-
-.google-ads-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-}
-
-.google-ads-card h3 {
-  margin: 0 0 8px 0;
-  color: #0f1724;
-}
-
-.google-ads-card p {
-  color: #4b5563;
-  margin: 6px 0 12px 0;
-}
-
-.google-ads-placeholder-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-  margin: 12px 0;
-}
-
-.google-ads-placeholder {
-  padding: 14px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(0, 102, 204, 0.08) 0%, rgba(0, 153, 255, 0.08) 100%);
-  border: 1px solid rgba(0, 102, 204, 0.12);
-  color: #0f1724;
-  font-weight: 700;
-  text-align: center;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
-}
-
-.google-ads-note {
-  margin-top: 6px;
-  font-size: 13px;
-  color: #6b7280;
-}
-
-.google-ads-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.google-ads-view-toggle {
-  display: inline-flex;
-  gap: 8px;
-  background: #fff;
-  padding: 6px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-}
-
-.google-ads-view-btn {
-  border: none;
-  background: transparent;
-  padding: 10px 14px;
-  border-radius: 9px;
-  font-weight: 700;
-  color: #0f1724;
-  cursor: pointer;
-  transition: all 180ms ease;
-}
-
-.google-ads-view-btn.active {
-  background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.22);
-}
-
-.google-ads-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.google-ads-actions .data-freshness {
-  display: inline-flex !important;
-  color: #0f1724;
-  background: #e0f2fe;
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-weight: 700;
-  font-size: 12px;
-}
-
-.google-ads-filters {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-
-.google-ads-filter {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 180px;
-}
-
-.google-ads-filter label {
-  font-weight: 700;
-  color: #0f1724;
-  font-size: 13px;
-}
-
-.google-ads-filter select {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1.5px solid rgba(0, 102, 204, 0.2);
-  background: #fff;
-  font-weight: 700;
-  color: #0f1724;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 160ms ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.google-ads-filter select:hover,
-.google-ads-filter select:focus {
-  border-color: #0066cc;
-  box-shadow: 0 4px 10px rgba(0, 102, 204, 0.14);
-  outline: none;
-}
-
-.google-ads-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.google-ads-stat-card {
-  padding: 12px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(0, 102, 204, 0.06) 0%, rgba(0, 153, 255, 0.06) 100%);
-  border: 1px solid rgba(0, 102, 204, 0.12);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
-}
-
-.google-ads-stat-card .label {
-  display: block;
-  color: #4b5563;
-  font-size: 12px;
-  margin-bottom: 4px;
-  font-weight: 700;
-}
-
-.google-ads-stat-card strong {
-  color: #0f1724;
-  font-size: 18px;
-}
-
-.google-ads-table table th,
-.google-ads-table table td {
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-.google-ads-table table td:first-child {
-  font-weight: 700;
-  color: #0f1724;
-}
-
-.metric-abbr {
-  text-decoration: underline dotted;
-  cursor: help;
-}
-
-.google-ads-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.google-ads-bar-row {
-  display: grid;
-  grid-template-columns: 1fr 3fr auto;
-  align-items: center;
-  gap: 10px;
-}
-
-.google-ads-bar-label {
-  font-weight: 700;
-  color: #0f1724;
-  font-size: 13px;
-  min-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.google-ads-bar-track {
-  position: relative;
-  background: #eef2ff;
-  border-radius: 999px;
-  height: 12px;
-  overflow: hidden;
-  border: 1px solid #e0e7ff;
-}
-
-.google-ads-bar-fill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
-  border-radius: 999px;
-}
-
-.google-ads-bar-fill.spend {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.google-ads-bar-value {
-  font-weight: 700;
-  font-size: 13px;
-  color: #0f1724;
-}
-
-.table-header.collapsible {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.collapse-btn {
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 700;
-  color: #0f1724;
-  transition: all 150ms ease;
-}
-
-.collapse-btn:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
-}
-
-.google-ads-bottom-charts {
-  margin-top: 12px;
-}
-
-.google-ads-bottom-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-.google-ads-bottom-chart {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.google-ads-pie-wrap {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-
-.google-ads-pie {
-  width: 200px;
-  height: 200px;
-}
-
-.google-ads-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 140px;
-}
-
-.legend-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #0f1724;
-}
-
-.legend-swatch {
-  width: 12px;
-  height: 12px;
-  border-radius: 4px;
-  border: 1px solid #e5e7eb;
-}
-
-.legend-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.legend-value {
-  font-weight: 700;
-}
-
-.google-ads-bar-fill.cpa {
-  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
-}
-
-.legend-scroll {
-  max-height: 180px;
-  overflow-y: auto;
-  padding-right: 6px;
 }
 

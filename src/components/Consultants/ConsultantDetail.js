@@ -1,9 +1,13 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { Card, StatCard } from '../UI/Card';
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar, AreaChart, Area,
-  XAxis, YAxis, Tooltip, Legend, CartesianGrid, ComposedChart, PieChart, Pie, Cell
+  XAxis, YAxis, Tooltip, Legend, CartesianGrid, ComposedChart, PieChart, Pie, Cell,
+  Tooltip as RechartsTooltip
 } from 'recharts';
+import { ChevronDown, Sparkles, ArrowRight, TrendingUp, TrendingDown } from 'lucide-react';
 import './Consultant.css';
+import { STATUS_COLORS, CHART_PALETTE } from '../../utils/chartColors';
 // ⚠️ SEPARATE MONTHLY WEBHOOK SERVICE - DO NOT TOUCH MAIN DASHBOARD DATA
 import { fetchMonthlyPerformance, analyzeBestWorstMonths } from '../../utils/monthlyPerformanceService';
 
@@ -13,6 +17,7 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
   // ⚠️ Does NOT affect main dashboard data or charts
   const [monthlyPerformance, setMonthlyPerformance] = useState(null);
   const [loadingMonthly, setLoadingMonthly] = useState(true);
+  const [showInsights, setShowInsights] = useState(false);
 
   // Function to load monthly data (can be called manually for refresh)
   const loadMonthlyData = async () => {
@@ -158,15 +163,13 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
 
   // Get current period data (30d default)
   const currentPeriod = chartData.find(d => d.period === '30D') || chartData[2];
-
-  const statusColors = ['#10b981', '#06b6d4', '#f59e0b', '#ef4444', '#9ca3af'];
   
   const statusBreakdown = useMemo(() => {
     return [
-      { name: 'Showed', value: currentPeriod.showed, color: '#10b981' },
-      { name: 'Confirmed', value: currentPeriod.confirmed, color: '#06b6d4' },
-      { name: 'No Show', value: currentPeriod.noShow, color: '#f59e0b' },
-      { name: 'Cancelled', value: currentPeriod.cancelled, color: '#ef4444' }
+      { name: 'Showed', value: currentPeriod.showed, color: STATUS_COLORS.showed },
+      { name: 'Confirmed', value: currentPeriod.confirmed, color: STATUS_COLORS.confirmed },
+      { name: 'No Show', value: currentPeriod.noShow, color: STATUS_COLORS.no_show },
+      { name: 'Cancelled', value: currentPeriod.cancelled, color: STATUS_COLORS.cancelled }
     ].filter(s => s.value > 0);
   }, [currentPeriod]);
 
@@ -336,98 +339,110 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
   const conversion = (leads, appts) => (leads > 0 ? ((appts / leads) * 100).toFixed(1) : '0.0');
 
   return (
-    <div id="consultant-root" className="consultant-details">
-      <h3 style={{marginTop: '30px', marginBottom: '20px'}}>Detailed Performance Analytics</h3>
+    <div id="consultant-root" className="analytics-dashboard" style={{ paddingTop: '1rem' }}>
+      <h3 style={{
+        marginTop: '2.5rem',
+        marginBottom: '1.5rem',
+        color: '#2c5282',
+        fontSize: '1.25rem',
+        fontWeight: '700',
+        paddingBottom: '0.75rem',
+        borderBottom: '1px solid #e2e8f0',
+        width: '100%',
+        display: 'block',
+        clear: 'both'
+      }}>
+        Detailed Performance Analytics
+      </h3>
 
-      <div className="charts-section">
-        {/* 1. Leads vs Appointments Trend */}
-        <div className="chart-container half-width">
-          <div className="chart-content">
-            <h4>Lead & Appointment Trends</h4>
-            <p className="chart-description">Tracks lead generation and appointment creation over time periods.</p>
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#667eea" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#667eea" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorAppts" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#764ba2" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#764ba2" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="period" />
-                <YAxis />
-                <Tooltip formatter={(v) => v.toFixed(0)} />
-                <Legend />
-                <Area type="monotone" dataKey="leads" stroke="#667eea" fillOpacity={1} fill="url(#colorLeads)" strokeWidth={2} />
-                <Area type="monotone" dataKey="appointments" stroke="#764ba2" fillOpacity={1} fill="url(#colorAppts)" strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="chart-legend-pdf">
-            <h5>📖 Chart Guide</h5>
-            <ul>
-              <li><span className="color-indicator" style={{background: '#667eea'}}></span><strong>Purple Area:</strong> Leads generated</li>
-              <li><span className="color-indicator" style={{background: '#764ba2'}}></span><strong>Dark Purple:</strong> Appointments booked</li>
-              <li><strong>Rising Lines:</strong> Growing pipeline</li>
-              <li><strong>Gap Between:</strong> Conversion opportunity</li>
-            </ul>
-            <div style={{marginTop: '12px', padding: '10px', background: '#fff', borderRadius: '4px', borderLeft: '3px solid #667eea'}}>
-              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#1e293b'}}>📊 Result:</p>
-              <p style={{margin: '4px 0 0 0', fontSize: '10px', color: '#475569', lineHeight: '1.5'}}>
-                1-year: {chartData[6]?.leads || 0} leads → {chartData[6]?.appointments || 0} appointments ({chartData[6]?.conversion || 0}% conversion). 
-                Trend: {chartData[0]?.leads < chartData[6]?.leads ? 'Growing' : 'Declining'} lead volume.
-              </p>
+      {/* ROW 1: Volume (60%) + Efficiency (40%) */}
+      <div className="trends-row">
+        {/* 1. Leads vs Appointments Trend - 58% width */}
+        <Card title="Lead & Appointment Trends" className="chart-card">
+            <div className="chart-content">
+              <p className="chart-description" style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.75rem' }}>Volume: lead generation and appointment creation over time.</p>
+              <ResponsiveContainer width="100%" height={220}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#667eea" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#667eea" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorAppts" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#764ba2" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#764ba2" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="period" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(v) => v.toFixed(0)} />
+                  <Legend wrapperStyle={{ fontSize: '11px' }} />
+                  <Area type="monotone" dataKey="leads" stroke="#667eea" fillOpacity={1} fill="url(#colorLeads)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="appointments" stroke="#764ba2" fillOpacity={1} fill="url(#colorAppts)" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
-          </div>
-        </div>
-
-        {/* 2. Conversion Rate Trend */}
-        <div className="chart-container half-width">
-          <div className="chart-content">
-            <h4>Conversion & Show Rate Trends</h4>
-            <p className="chart-description">Shows how effectively leads convert to appointments and appointment show rates.</p>
-            <ResponsiveContainer width="100%" height={280}>
-              <ComposedChart data={conversionTrend} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="period" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Legend />
-                <Line yAxisId="left" type="monotone" dataKey="conversion" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4 }} name="Conversion Rate (%)" />
-                <Line yAxisId="right" type="monotone" dataKey="showRate" stroke="#06b6d4" strokeWidth={3} dot={{ r: 4 }} name="Show Rate (%)" />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="chart-legend-pdf">
-            <h5>Chart Guide</h5>
-            <ul>
-              <li><span className="color-indicator" style={{background: '#f59e0b'}}></span><strong>Orange Line:</strong> Lead → Appointment conversion %</li>
-              <li><span className="color-indicator" style={{background: '#06b6d4'}}></span><strong>Cyan Line:</strong> Appointment show rate %</li>
-              <li><strong>Upward Trend:</strong> Improving performance</li>
-              <li><strong>Target:</strong> Conversion 20%+, Show Rate 50%+</li>
-            </ul>
-            <div style={{marginTop: '12px', padding: '10px', background: '#fff', borderRadius: '4px', borderLeft: '3px solid #f59e0b'}}>
-              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#1e293b'}}>Result:</p>
-              <p style={{margin: '4px 0 0 0', fontSize: '10px', color: '#475569', lineHeight: '1.5'}}>
-                Current: {currentPeriod.conversion}% conversion, {currentPeriod.showRate}% show rate. 
-                {currentPeriod.conversion >= 20 ? 'Meeting' : 'Below'} conversion target. 
-                {currentPeriod.showRate >= 50 ? 'Meeting' : 'Below'} show rate target.
-              </p>
+            <div className="chart-legend-pdf">
+              <h5>📖 Chart Guide</h5>
+              <ul>
+                <li><span className="color-indicator" style={{background: '#667eea'}}></span><strong>Purple Area:</strong> Leads generated</li>
+                <li><span className="color-indicator" style={{background: '#764ba2'}}></span><strong>Dark Purple:</strong> Appointments booked</li>
+                <li><strong>Rising Lines:</strong> Growing pipeline</li>
+                <li><strong>Gap Between:</strong> Conversion opportunity</li>
+              </ul>
+              <div style={{marginTop: '12px', padding: '10px', background: '#f8fafc', borderRadius: '8px', borderLeft: '3px solid #667eea'}}>
+                <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#2c5282'}}>📊 Result:</p>
+                <p style={{margin: '4px 0 0 0', fontSize: '10px', color: '#475569', lineHeight: '1.5'}}>
+                  1-year: {chartData[6]?.leads || 0} leads → {chartData[6]?.appointments || 0} appointments ({chartData[6]?.conversion || 0}% conversion). 
+                  Trend: {chartData[0]?.leads < chartData[6]?.leads ? 'Growing' : 'Declining'} lead volume.
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
+        </Card>
 
-        {/* 2.5 Performance Over Time (6 Month Trend) */}
-        <div className="chart-container half-width">
+        {/* 2. Conversion Rate Trend - 42% width */}
+        <Card title="Conversion & Show Rate Trends" className="chart-card">
+            <div className="chart-content">
+              <p className="chart-description" style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.75rem' }}>Efficiency: conversion and show rate performance.</p>
+              <ResponsiveContainer width="100%" height={220}>
+                <ComposedChart data={conversionTrend} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="period" tick={{ fontSize: 11 }} />
+                  <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Legend wrapperStyle={{ fontSize: '11px' }} />
+                  <Line yAxisId="left" type="monotone" dataKey="conversion" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} name="Conv %" />
+                  <Line yAxisId="right" type="monotone" dataKey="showRate" stroke="#06b6d4" strokeWidth={2} dot={{ r: 3 }} name="Show %" />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="chart-legend-pdf">
+              <h5>Chart Guide</h5>
+              <ul>
+                <li><span className="color-indicator" style={{background: '#f59e0b'}}></span><strong>Orange:</strong> Conversion %</li>
+                <li><span className="color-indicator" style={{background: '#06b6d4'}}></span><strong>Cyan:</strong> Show Rate %</li>
+                <li><strong>Target:</strong> Conv 20%+, Show 50%+</li>
+              </ul>
+              <div style={{marginTop: '12px', padding: '10px', background: '#f8fafc', borderRadius: '8px', borderLeft: '3px solid #f59e0b'}}>
+                <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#2c5282'}}>Result:</p>
+                <p style={{margin: '4px 0 0 0', fontSize: '10px', color: '#475569', lineHeight: '1.5'}}>
+                  Current: {currentPeriod.conversion}% conv, {currentPeriod.showRate}% show. 
+                  {currentPeriod.conversion >= 20 && currentPeriod.showRate >= 50 ? '✓ On target' : '⚠ Below target'}
+                </p>
+              </div>
+            </div>
+        </Card>
+      </div>
+
+      {/* ROW 2: Three equal charts (33% each) */}
+      <div className="breakdowns-row">
+        {/* 6-Month Performance */}
+        <Card title="6-Month Performance" className="chart-card" style={{ minHeight: '420px' }}>
           <div className="chart-content">
-            <h4>Performance Over Time (Last 6 Months)</h4>
-            <p className="chart-description">Tracks overall performance changes comparing 180-day average to current 30-day performance.</p>
-            <ResponsiveContainer width="100%" height={280}>
+            <p className="chart-description" style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>180-day avg vs current 30-day.</p>
+            <ResponsiveContainer width="100%" height={200}>
               <BarChart
                 data={[
                   {
@@ -474,20 +489,21 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
               <li><span className="color-indicator" style={{background: '#06b6d4'}}></span><strong>Dark Cyan:</strong> Current 30-day show rate</li>
               <li><strong>Compare:</strong> Current vs historical trend</li>
             </ul>
-            <div style={{marginTop: '12px', padding: '10px', background: '#fff', borderRadius: '4px', borderLeft: '3px solid #06b6d4'}}>
-              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#1e293b'}}>Result:</p>
+            <div style={{marginTop: '12px', padding: '10px', background: '#f8fafc', borderRadius: '8px', borderLeft: '3px solid #06b6d4'}}>
+              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#2c5282'}}>Result:</p>
               <p style={{margin: '4px 0 0 0', fontSize: '10px', color: '#475569', lineHeight: '1.5'}}>
                 Conversion: {(chartData.find(d => d.period === '180D')?.conversion || 0).toFixed(1)}% (6M) → {currentPeriod.conversion}% (30D) {currentPeriod.conversion > (chartData.find(d => d.period === '180D')?.conversion || 0) ? 'Up' : 'Down'}. 
                 Show Rate: {(chartData.find(d => d.period === '180D')?.showRate || 0).toFixed(1)}% → {currentPeriod.showRate}% {currentPeriod.showRate > (chartData.find(d => d.period === '180D')?.showRate || 0) ? 'Up' : 'Down'}.
               </p>
             </div>
           </div>
-        </div>        {/* 3. Status Breakdown Pie Chart */}
-        <div className="chart-container half-width">
+        </Card>
+
+        {/* Status Breakdown Pie Chart */}
+        <Card title="Status Distribution" className="chart-card" style={{ minHeight: '420px' }}>
           <div className="chart-content">
-            <h4>📋 Appointment Status Distribution (30D)</h4>
-            <p className="chart-description">Breakdown of appointment outcomes: showed, no-shows, confirmed, cancelled.</p>
-            <ResponsiveContainer width="100%" height={280}>
+            <p className="chart-description" style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Appointment outcomes breakdown.</p>
+            <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
                   data={statusBreakdown}
@@ -516,8 +532,8 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
               <li><span className="color-indicator" style={{background: '#ef4444'}}></span><strong>Red:</strong> Cancelled</li>
               <li><strong>Goal:</strong> Maximize green, minimize orange</li>
             </ul>
-            <div style={{marginTop: '12px', padding: '10px', background: '#fff', borderRadius: '4px', borderLeft: '3px solid #10b981'}}>
-              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#1e293b'}}>📊 Result:</p>
+            <div style={{marginTop: '12px', padding: '10px', background: '#f8fafc', borderRadius: '8px', borderLeft: '3px solid #10b981'}}>
+              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#2c5282'}}>📊 Result:</p>
               <p style={{margin: '4px 0 0 0', fontSize: '10px', color: '#475569', lineHeight: '1.5'}}>
                 Of {currentPeriod.appointments} appointments: {currentPeriod.showed} showed ({((currentPeriod.showed/currentPeriod.appointments)*100).toFixed(0)}%), 
                 {currentPeriod.noShow} no-shows ({((currentPeriod.noShow/currentPeriod.appointments)*100).toFixed(0)}%). 
@@ -525,14 +541,13 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
               </p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* 4. Performance vs Team */}
-        <div className="chart-container half-width">
+        {/* Performance vs Team */}
+        <Card title="vs Team Average" className="chart-card" style={{ minHeight: '420px' }}>
           <div className="chart-content">
-            <h4>👥 Performance vs Team Average (30D)</h4>
-            <p className="chart-description">Compares individual performance metrics against team averages.</p>
-            <ResponsiveContainer width="100%" height={280}>
+            <p className="chart-description" style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Individual vs team metrics.</p>
+            <ResponsiveContainer width="100%" height={200}>
               <BarChart data={performanceVsTeam} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="metric" />
@@ -552,22 +567,24 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
               <li><strong>Taller Purple:</strong> Above team average ✓</li>
               <li><strong>Taller Gray:</strong> Below team average (improvement area)</li>
             </ul>
-            <div style={{marginTop: '12px', padding: '10px', background: '#fff', borderRadius: '4px', borderLeft: '3px solid #667eea'}}>
-              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#1e293b'}}>📊 Result:</p>
+            <div style={{marginTop: '12px', padding: '10px', background: '#f8fafc', borderRadius: '8px', borderLeft: '3px solid #667eea'}}>
+              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#2c5282'}}>📊 Result:</p>
               <p style={{margin: '4px 0 0 0', fontSize: '10px', color: '#475569', lineHeight: '1.5'}}>
                 {currentPeriod.vsTeam > 0 ? `🏆 Outperforming team by ${currentPeriod.vsTeam}%` : currentPeriod.vsTeam < 0 ? `📉 ${Math.abs(currentPeriod.vsTeam)}% below team average` : 'At team average'}. 
                 Leads: {currentPeriod.leads} vs team avg {currentPeriod.teamLeads.toFixed(0)}.
               </p>
             </div>
           </div>
-        </div>
+        </Card>
+      </div>
 
-        {/* 5. Status Details Bar Chart */}
-        <div className="chart-container half-width">
+      {/* ROW 3: Two charts side by side */}
+      <div className="two-col-row">
+        {/* Status Details Bar Chart */}
+        <Card title="Appointment Status Details" className="chart-card">
           <div className="chart-content">
-            <h4>✅ Appointment Status Details (30D)</h4>
-            <p className="chart-description">Detailed breakdown of each appointment outcome category.</p>
-            <ResponsiveContainer width="100%" height={280}>
+            <p className="chart-description" style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Each outcome category.</p>
+            <ResponsiveContainer width="100%" height={200}>
               <BarChart
                 data={[{
                   name: 'Status',
@@ -601,21 +618,20 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
               <li><strong>Focus:</strong> Convert confirmed → showed, reduce no-shows</li>
             </ul>
             <div style={{marginTop: '12px', padding: '10px', background: '#fff', borderRadius: '4px', borderLeft: '3px solid #10b981'}}>
-              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#1e293b'}}>📊 Result:</p>
+              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#2c5282'}}>📊 Result:</p>
               <p style={{margin: '4px 0 0 0', fontSize: '10px', color: '#475569', lineHeight: '1.5'}}>
                 Highest: {Math.max(currentPeriod.showed, currentPeriod.confirmed, currentPeriod.noShow, currentPeriod.cancelled) === currentPeriod.showed ? 'Showed' : Math.max(currentPeriod.showed, currentPeriod.confirmed, currentPeriod.noShow, currentPeriod.cancelled) === currentPeriod.noShow ? 'No-shows' : Math.max(currentPeriod.showed, currentPeriod.confirmed, currentPeriod.noShow, currentPeriod.cancelled) === currentPeriod.confirmed ? 'Confirmed' : 'Cancelled'} ({Math.max(currentPeriod.showed, currentPeriod.confirmed, currentPeriod.noShow, currentPeriod.cancelled)}). 
                 {currentPeriod.confirmed > 0 ? `${currentPeriod.confirmed} pending confirmations to convert.` : 'No pending confirmations.'}
               </p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* 6. Period-over-Period Growth */}
-        <div className="chart-container half-width">
+        {/* Period-over-Period Growth */}
+        <Card title="Period Growth Rate" className="chart-card">
           <div className="chart-content">
-            <h4>📊 Period-to-Period Growth Rate</h4>
-            <p className="chart-description">Shows momentum in lead and appointment generation across periods.</p>
-            <ResponsiveContainer width="100%" height={280}>
+            <p className="chart-description" style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Momentum in lead/appointment generation.</p>
+            <ResponsiveContainer width="100%" height={200}>
               <BarChart data={growthData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="period" />
@@ -637,173 +653,382 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
               <li><strong>Watch:</strong> Consistent positive = strong momentum</li>
             </ul>
             <div style={{marginTop: '12px', padding: '10px', background: '#fff', borderRadius: '4px', borderLeft: '3px solid #667eea'}}>
-              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#1e293b'}}>📊 Result:</p>
+              <p style={{margin: 0, fontSize: '11px', fontWeight: '600', color: '#2c5282'}}>📊 Result:</p>
               <p style={{margin: '4px 0 0 0', fontSize: '10px', color: '#475569', lineHeight: '1.5'}}>
                 Recent trend: {growthData[growthData.length-1]?.leadGrowth > 0 ? '📈 Growing' : '📉 Declining'} leads ({growthData[growthData.length-1]?.leadGrowth > 0 ? '+' : ''}{growthData[growthData.length-1]?.leadGrowth}%), 
                 {growthData[growthData.length-1]?.apptGrowth > 0 ? '📈 Growing' : '📉 Declining'} appointments ({growthData[growthData.length-1]?.apptGrowth > 0 ? '+' : ''}{growthData[growthData.length-1]?.apptGrowth}%).
               </p>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Comprehensive Period Comparison Table */}
-      <div className="chart-container full-width" style={{marginTop: '30px'}}>
-        <h4>📈 Complete Period Performance Breakdown</h4>
+      {/* FULL-WIDTH: Performance Table */}
+      <Card title="Complete Period Performance Breakdown" className="chart-card" style={{ marginBottom: '24px' }}>
         <div className="table-container">
-          <table className="consultant-table">
+          <table className="consultant-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', tableLayout: 'fixed' }}>
             <thead>
-              <tr>
-                <th>Period</th>
-                <th>Leads</th>
-                <th>Appointments</th>
-                <th>Conversion</th>
-                <th>Showed</th>
-                <th>No Show</th>
-                <th>Confirmed</th>
-                <th>Cancelled</th>
-                <th>Show Rate</th>
-                <th>vs Team</th>
+              <tr style={{ background: '#2c5282', borderBottom: '2px solid #1e4175' }}>
+                <th style={{ padding: '12px 8px', textAlign: 'left', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '8%' }}>Period</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '8%' }}>Leads</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '8%' }}>Appts</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', background: '#1e4175', width: '10%' }}>Conv%</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '9%' }}>Showed</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '9%' }}>No Show</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '10%' }}>Conf'd</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '10%' }}>Cancel</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', background: '#1e4175', width: '10%' }}>Show%</th>
+                <th style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: 'white', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.3px', width: '10%' }}>vs Team</th>
               </tr>
             </thead>
             <tbody>
-              {chartData.map(row => (
-                <tr key={row.period}>
-                  <td><strong>{row.period}</strong></td>
-                  <td className="metric">{row.leads}</td>
-                  <td className="metric">{row.appointments}</td>
-                  <td className="metric" style={{color: row.conversion > row.teamConversion ? '#10b981' : '#f59e0b'}}>{row.conversion}%</td>
-                  <td className="metric" style={{color: '#10b981'}}>{row.showed}</td>
-                  <td className="metric" style={{color: '#f59e0b'}}>{row.noShow}</td>
-                  <td className="metric" style={{color: '#06b6d4'}}>{row.confirmed}</td>
-                  <td className="metric" style={{color: '#ef4444'}}>{row.cancelled}</td>
-                  <td className="metric" style={{color: row.showRate > 50 ? '#10b981' : row.showRate > 25 ? '#f59e0b' : '#ef4444'}}>{row.showRate}%</td>
-                  <td className="metric" style={{color: row.vsTeam > 0 ? '#10b981' : '#ef4444'}}>{row.vsTeam > 0 ? '+' : ''}{row.vsTeam}%</td>
+              {chartData.map((row, idx) => (
+                <tr key={row.period} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#fafcfd' }}>
+                  <td style={{ padding: '12px 8px', fontWeight: 700, color: '#1e293b', fontSize: '0.8rem' }}>{row.period}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 600, color: '#475569' }}>{row.leads}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 600, color: '#475569' }}>{row.appointments}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', background: idx % 2 === 0 ? '#f8fafc' : '#f0f4f8' }}>
+                    <span style={{ padding: '3px 6px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600, background: row.conversion > row.teamConversion ? '#f0fdf4' : '#fefce8', color: row.conversion > row.teamConversion ? '#166534' : '#854d0e' }}>
+                      {row.conversion}%
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 700, color: '#166534' }}>{row.showed}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 600, color: '#9a3412' }}>{row.noShow}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 600, color: '#0369a1' }}>{row.confirmed}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', fontWeight: 600, color: '#991b1b' }}>{row.cancelled}</td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right', background: idx % 2 === 0 ? '#f8fafc' : '#f0f4f8' }}>
+                    <span style={{ padding: '3px 6px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600, background: row.showRate > 50 ? '#f0fdf4' : row.showRate > 25 ? '#fefce8' : '#fef2f2', color: row.showRate > 50 ? '#166534' : row.showRate > 25 ? '#854d0e' : '#991b1b' }}>
+                      {row.showRate}%
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px 6px', textAlign: 'right' }}>
+                    <span style={{ padding: '3px 6px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600, background: row.vsTeam > 0 ? '#f0fdf4' : '#fef2f2', color: row.vsTeam > 0 ? '#166534' : '#991b1b' }}>
+                      {row.vsTeam > 0 ? '+' : ''}{row.vsTeam}%
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
-{/* Legend & Explanations */}
-<div className="metrics-legend" style={{marginTop: '30px', padding: '20px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb'}}>
-  <h4>📌 Metric Explanations</h4>
-  <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '15px'}}>
-    <div>
-      <p><strong>Conversion Rate:</strong> Percentage of leads that become appointments (Appointments ÷ Leads × 100)</p>
-      <p><strong>Show Rate:</strong> Percentage of appointments where the client showed up (Showed ÷ Appointments × 100)</p>
-    </div>
-    <div>
-      <p><strong>vs Team:</strong> Performance difference vs team average (+/- %)</p>
-      <p><strong>Status Categories:</strong> Showed (attended), Confirmed (booked), No Show (missed), Cancelled (cancelled)</p>
-    </div>
-  </div>
-</div>
-
-
-      {/* 6-Month Performance Trend Analysis */}
-      <div className="trend-analysis-section" style={{marginTop: '30px', padding: '25px', backgroundColor: performanceTrend.trend === 'improving' ? '#ecfdf5' : performanceTrend.trend === 'declining' ? '#fef2f2' : '#f0f9ff', borderRadius: '12px', border: `2px solid ${performanceTrend.trend === 'improving' ? '#10b981' : performanceTrend.trend === 'declining' ? '#ef4444' : '#06b6d4'}`}}>
-        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px'}}>
-          <h3 style={{margin: 0, color: '#333', fontSize: '18px', fontWeight: '700'}}>
-            📊 6-Month Performance Analysis & Insights
+      {/* 6-Month Performance Analysis - Premium Split Layout */}
+      <Card className="chart-card wide" style={{marginTop: '30px'}}>
+        <div 
+          className="insights-header"
+          onClick={() => setShowInsights(!showInsights)}
+          style={{
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: showInsights ? '24px' : '0'
+          }}
+        >
+          <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#2c5282', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={20} color="#2c5282" />
+            6-Month Performance Analysis & Insights
           </h3>
-          <span style={{fontSize: '48px', color: performanceTrend.trendColor}}>{performanceTrend.trendIcon}</span>
-        </div>
-
-        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '20px'}}>
-          <div style={{padding: '15px', backgroundColor: 'white', borderRadius: '8px', border: `2px solid ${performanceTrend.conversionChange > 0 ? '#06b6d4' : '#ec4899'}`, boxShadow: `0 0 12px ${performanceTrend.conversionChange > 0 ? 'rgba(6, 182, 212, 0.1)' : 'rgba(236, 72, 153, 0.1)'}`}}>
-            <p style={{margin: '0 0 8px 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#888', fontWeight: '600'}}>Conversion Rate Trend</p>
-            <p style={{margin: '0', fontSize: '24px', fontWeight: '700', color: performanceTrend.conversionChange > 0 ? '#06b6d4' : '#ec4899'}}>
-              {performanceTrend.conversionChange > 0 ? '+' : ''}{performanceTrend.conversionChange}%
-            </p>
-            <p style={{margin: '5px 0 0 0', fontSize: '13px', color: '#666'}}>
-              {performanceTrend.sixMonthData.conversion.toFixed(1)}% → {performanceTrend.oneMonthData.conversion.toFixed(1)}%
-            </p>
-            <p style={{margin: '3px 0 0 0', fontSize: '12px', color: '#999', fontStyle: 'italic'}}>
-              {performanceTrend.conversionChange > 0 ? 'Better at converting leads' : 'Fewer leads converting to appointments'}
-            </p>
-          </div>
-
-          <div style={{padding: '15px', backgroundColor: 'white', borderRadius: '8px', border: `2px solid ${performanceTrend.showRateChange > 0 ? '#06b6d4' : '#ec4899'}`, boxShadow: `0 0 12px ${performanceTrend.showRateChange > 0 ? 'rgba(6, 182, 212, 0.1)' : 'rgba(236, 72, 153, 0.1)'}`}}>
-            <p style={{margin: '0 0 8px 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#888', fontWeight: '600'}}>Show Rate Trend</p>
-            <p style={{margin: '0', fontSize: '24px', fontWeight: '700', color: performanceTrend.showRateChange > 0 ? '#06b6d4' : '#ec4899'}}>
-              {performanceTrend.showRateChange > 0 ? '+' : ''}{performanceTrend.showRateChange}%
-            </p>
-            <p style={{margin: '5px 0 0 0', fontSize: '13px', color: '#666'}}>
-              {performanceTrend.sixMonthData.showRate.toFixed(1)}% → {performanceTrend.oneMonthData.showRate.toFixed(1)}%
-            </p>
-            <p style={{margin: '3px 0 0 0', fontSize: '12px', color: '#999', fontStyle: 'italic'}}>
-              {performanceTrend.showRateChange > 0 ? 'More clients showing up' : 'Fewer clients attending appointments'}
-            </p>
-          </div>
-
-          <div style={{padding: '15px', backgroundColor: 'white', borderRadius: '8px', border: `2px solid ${performanceTrend.leadsVelocityChange > 0 ? '#06b6d4' : '#ec4899'}`, boxShadow: `0 0 12px ${performanceTrend.leadsVelocityChange > 0 ? 'rgba(6, 182, 212, 0.1)' : 'rgba(236, 72, 153, 0.1)'}`}}>
-            <p style={{margin: '0 0 8px 0', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#888', fontWeight: '600'}}>Lead Velocity</p>
-            <p style={{margin: '0', fontSize: '24px', fontWeight: '700', color: performanceTrend.leadsVelocityChange > 0 ? '#06b6d4' : '#ec4899'}}>
-              {performanceTrend.leadsVelocityChange > 0 ? '+' : ''}{performanceTrend.leadsVelocityChange}%
-            </p>
-            <p style={{margin: '5px 0 0 0', fontSize: '13px', color: '#666'}}>
-              {performanceTrend.leadsPerMonth.toFixed(0)}/month → {performanceTrend.oneMonthData.leads}/month
-            </p>
-            <p style={{margin: '3px 0 0 0', fontSize: '12px', color: '#999', fontStyle: 'italic'}}>
-              {performanceTrend.leadsVelocityChange > 0 ? 'Lead generation accelerating' : 'Lead generation slowing'}
-            </p>
-          </div>
-        </div>
-
-        {/* Daily Pace Comparison */}
-        <div style={{padding: '15px', backgroundColor: 'white', borderRadius: '8px', marginBottom: '20px', border: '2px solid #06b6d4', boxShadow: '0 0 12px rgba(6, 182, 212, 0.1)'}}>
-          <p style={{margin: '0 0 12px 0', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#06b6d4', fontWeight: '700'}}>📅 Daily Performance Pace</p>
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px'}}>
-            <div>
-              <p style={{margin: '0 0 8px 0', fontSize: '12px', color: '#666', fontWeight: '600'}}>6-Month Average Daily:</p>
-              <p style={{margin: '0', fontSize: '14px', color: '#333'}}>{performanceTrend.sixMonthDailyLeads.toFixed(2)} leads/day</p>
-              <p style={{margin: '3px 0 0 0', fontSize: '14px', color: '#333'}}>{(performanceTrend.sixMonthData.appointments / 180).toFixed(2)} appointments/day</p>
-            </div>
-            <div>
-              <p style={{margin: '0 0 8px 0', fontSize: '12px', color: '#06b6d4', fontWeight: '700'}}>Current 30-Day Daily:</p>
-              <p style={{margin: '0', fontSize: '14px', color: '#06b6d4', fontWeight: '700'}}>{performanceTrend.thirtyDayDailyLeads.toFixed(2)} leads/day</p>
-              <p style={{margin: '3px 0 0 0', fontSize: '14px', color: '#06b6d4', fontWeight: '700'}}>{(performanceTrend.oneMonthData.appointments / 30).toFixed(2)} appointments/day</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Detailed Analysis Section */}
-        <div style={{padding: '15px', backgroundColor: 'white', borderRadius: '8px', borderLeft: `4px solid ${performanceTrend.trend === 'improving' ? '#06b6d4' : performanceTrend.trend === 'declining' ? '#ec4899' : '#06b6d4'}`, lineHeight: '1.8', boxShadow: '0 2px 8px rgba(0,0,0,0.05)'}}>
-          <p style={{margin: '0 0 12px 0', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px', color: performanceTrend.trend === 'improving' ? '#06b6d4' : performanceTrend.trend === 'declining' ? '#ec4899' : '#06b6d4', fontWeight: '700'}}>💡 What This Means</p>
-          <div 
-            style={{fontSize: '14px', color: '#333', lineHeight: '1.7'}}
-            dangerouslySetInnerHTML={{__html: performanceTrend.detailedAnalysis}}
+          <ChevronDown 
+            size={20} 
+            style={{ 
+              transition: 'transform 0.3s ease',
+              transform: showInsights ? 'rotate(180deg)' : 'rotate(0deg)',
+              color: '#64748b'
+            }}
           />
         </div>
-      </div>
+
+        {showInsights && (
+          <div style={{ display: 'grid', gridTemplateColumns: '65fr 35fr', gap: '28px' }}>
+            {/* LEFT COLUMN (65%) - Visual Zone */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', height: '100%' }}>
+              {/* Sparkline Chart - Clean & Minimal */}
+              <div style={{ height: '140px', background: '#fafbfc', borderRadius: '8px', padding: '16px 12px 12px 12px', position: 'relative' }}>
+                {/* Chart Legend - Aligned with Title */}
+                <div style={{ position: 'absolute', top: '16px', right: '12px', display: 'flex', gap: '14px', fontSize: '10px', fontWeight: '600', color: '#64748b' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ width: '14px', height: '3px', background: '#2c5282', borderRadius: '2px' }}></div>
+                    Conversion
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ width: '14px', height: '3px', background: '#667eea', borderRadius: '2px' }}></div>
+                    Show Rate
+                  </span>
+                </div>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart 
+                    data={[
+                      { 
+                        name: '6M Avg', 
+                        conversion: performanceTrend.sixMonthData.conversion, 
+                        showRate: performanceTrend.sixMonthData.showRate
+                      },
+                      { 
+                        name: 'Current', 
+                        conversion: performanceTrend.oneMonthData.conversion, 
+                        showRate: performanceTrend.oneMonthData.showRate
+                      }
+                    ]}
+                    margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
+                  >
+                    <XAxis dataKey="name" stroke="#94a3b8" style={{ fontSize: '11px', fontWeight: '600' }} axisLine={false} tickLine={false} />
+                    <RechartsTooltip 
+                      contentStyle={{ 
+                        background: 'white', 
+                        border: '1px solid #e2e8f0', 
+                        borderRadius: '6px',
+                        fontSize: '11px',
+                        padding: '8px 10px'
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="conversion" 
+                      stroke="#2c5282" 
+                      strokeWidth={3.5} 
+                      name="Conversion %"
+                      dot={{ r: 6, fill: '#2c5282', strokeWidth: 2, stroke: 'white' }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="showRate" 
+                      stroke="#667eea" 
+                      strokeWidth={3.5} 
+                      name="Show Rate %"
+                      dot={{ r: 6, fill: '#667eea', strokeWidth: 2, stroke: 'white' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Trend Pills - Horizontal Row of 3 (Tighter) */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                {/* Conversion Rate Pill */}
+                <div style={{
+                  padding: '12px 14px',
+                  background: performanceTrend.conversionChange < 0 ? '#fef2f2' : '#f0fdf4',
+                  border: `2px solid ${performanceTrend.conversionChange < 0 ? '#fecaca' : '#bbf7d0'}`,
+                  borderRadius: '8px'
+                }}>
+                  <p style={{ 
+                    margin: '0 0 6px 0', 
+                    fontSize: '10px', 
+                    fontWeight: '600', 
+                    color: '#64748b', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.5px' 
+                  }}>
+                    Conversion
+                  </p>
+                  <p style={{ 
+                    margin: '0 0 4px 0', 
+                    fontSize: '26px', 
+                    fontWeight: '700', 
+                    color: performanceTrend.conversionChange < 0 ? '#991b1b' : '#166534',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    {performanceTrend.conversionChange > 0 ? <TrendingUp size={22} /> : <TrendingDown size={22} />}
+                    {performanceTrend.conversionChange > 0 ? '+' : ''}{performanceTrend.conversionChange.toFixed(1)}%
+                  </p>
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: '12px', 
+                    color: '#475569',
+                    fontWeight: '500'
+                  }}>
+                    {performanceTrend.sixMonthData.conversion.toFixed(1)}% → {performanceTrend.oneMonthData.conversion.toFixed(1)}%
+                  </p>
+                </div>
+
+                {/* Show Rate Pill */}
+                <div style={{
+                  padding: '12px 14px',
+                  background: performanceTrend.showRateChange < 0 ? '#fef2f2' : '#f0fdf4',
+                  border: `2px solid ${performanceTrend.showRateChange < 0 ? '#fecaca' : '#bbf7d0'}`,
+                  borderRadius: '8px'
+                }}>
+                  <p style={{ 
+                    margin: '0 0 6px 0', 
+                    fontSize: '10px', 
+                    fontWeight: '600', 
+                    color: '#64748b', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.5px' 
+                  }}>
+                    Show Rate
+                  </p>
+                  <p style={{ 
+                    margin: '0 0 4px 0', 
+                    fontSize: '26px', 
+                    fontWeight: '700', 
+                    color: performanceTrend.showRateChange < 0 ? '#991b1b' : '#166534',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    {performanceTrend.showRateChange > 0 ? <TrendingUp size={22} /> : <TrendingDown size={22} />}
+                    {performanceTrend.showRateChange > 0 ? '+' : ''}{performanceTrend.showRateChange.toFixed(1)}%
+                  </p>
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: '12px', 
+                    color: '#475569',
+                    fontWeight: '500'
+                  }}>
+                    {performanceTrend.sixMonthData.showRate.toFixed(1)}% → {performanceTrend.oneMonthData.showRate.toFixed(1)}%
+                  </p>
+                </div>
+
+                {/* Velocity Pill */}
+                <div style={{
+                  padding: '12px 14px',
+                  background: performanceTrend.leadsVelocityChange < 0 ? '#fef2f2' : '#f0fdf4',
+                  border: `2px solid ${performanceTrend.leadsVelocityChange < 0 ? '#fecaca' : '#bbf7d0'}`,
+                  borderRadius: '8px'
+                }}>
+                  <p style={{ 
+                    margin: '0 0 6px 0', 
+                    fontSize: '10px', 
+                    fontWeight: '600', 
+                    color: '#64748b', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.5px' 
+                  }}>
+                    Velocity
+                  </p>
+                  <p style={{ 
+                    margin: '0 0 4px 0', 
+                    fontSize: '26px', 
+                    fontWeight: '700', 
+                    color: performanceTrend.leadsVelocityChange < 0 ? '#991b1b' : '#166534',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    {performanceTrend.leadsVelocityChange > 0 ? <TrendingUp size={22} /> : <TrendingDown size={22} />}
+                    {performanceTrend.leadsVelocityChange > 0 ? '+' : ''}{performanceTrend.leadsVelocityChange.toFixed(1)}%
+                  </p>
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: '12px', 
+                    color: '#475569',
+                    fontWeight: '500'
+                  }}>
+                    {performanceTrend.leadsPerMonth.toFixed(0)} → {performanceTrend.oneMonthData.leads}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN (35%) - Context Zone */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', height: '100%' }}>
+              {/* Daily Performance Pace - Compact Strip */}
+              <div style={{
+                padding: '18px',
+                background: 'linear-gradient(135deg, #ecfeff 0%, #f0f9ff 100%)',
+                border: '1px solid #a5f3fc',
+                borderLeft: '4px solid #06b6d4',
+                borderRadius: '8px'
+              }}>
+                <p style={{ 
+                  margin: '0 0 14px 0', 
+                  fontSize: '11px', 
+                  fontWeight: '700', 
+                  color: '#0e7490',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>
+                  ⚡ Daily Performance Pace
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#64748b', fontWeight: '600' }}>6M Avg</p>
+                    <p style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#475569' }}>
+                      {performanceTrend.sixMonthDailyLeads.toFixed(1)}
+                    </p>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: '#94a3b8' }}>leads/day</p>
+                  </div>
+                  <ArrowRight size={28} color={performanceTrend.leadsVelocityChange < 0 ? '#991b1b' : '#166534'} strokeWidth={2.5} />
+                  <div>
+                    <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#64748b', fontWeight: '600' }}>Current</p>
+                    <p style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#0f172a' }}>
+                      {performanceTrend.thirtyDayDailyLeads.toFixed(1)}
+                    </p>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: '#94a3b8' }}>leads/day</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* What This Means - Premium AI Box */}
+              <div style={{
+                padding: '20px',
+                background: 'white',
+                border: '2px solid #e2e8f0',
+                borderRadius: '8px',
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                {/* Premium Header */}
+                <div style={{
+                  margin: '0 0 16px 0',
+                  padding: '0 0 12px 0',
+                  borderBottom: '2px solid #f1f5f9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <Sparkles size={16} color="#2c5282" />
+                  <p style={{ 
+                    margin: 0,
+                    fontSize: '12px', 
+                    fontWeight: '700', 
+                    color: '#2c5282',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    What This Means
+                  </p>
+                </div>
+                
+                {/* AI Content */}
+                <div 
+                  style={{
+                    fontSize: '13px', 
+                    color: '#475569', 
+                    lineHeight: '1.9',
+                    flex: 1
+                  }}
+                  dangerouslySetInnerHTML={{__html: performanceTrend.detailedAnalysis
+                    .replace(/Performance is /g, '<strong style="color: #1e293b;">Performance is </strong>')
+                    .replace(/<strong>Recommendation:<\/strong>/g, 
+                      '<div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #e2e8f0;"><p style="margin: 0 0 6px 0; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #2c5282; text-transform: uppercase; letter-spacing: 0.5px;"><span style="font-size: 14px; color: #2c5282;">→</span> NEXT STEP</p><strong style="color: #2c5282; font-size: 13px; line-height: 1.8; font-weight: 700;">')
+                    .replace(/<\/strong>$/g, '</strong></div>')
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </Card>
 
       {/* ========== SEPARATE MONTHLY BEST/WORST SECTION ========== */}
       {/* ⚠️ This data comes from DIFFERENT webhook service */}
       {/* ⚠️ Does NOT affect any data above this section */}
-      <div style={{marginTop: '40px', padding: '20px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '2px dashed #cbd5e1'}}>
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-          <h3 style={{marginTop: '0', marginBottom: '0', fontSize: '18px', color: '#475569'}}>
-            📅 Historical Monthly Performance
-            <span style={{fontSize: '12px', color: '#94a3b8', fontWeight: 'normal', marginLeft: '10px'}}>
-              (Separate data source)
-            </span>
-          </h3>
+      <Card title="Historical Monthly Performance" className="chart-card wide" style={{ marginTop: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>
+            Source: Separate data source (Monthly Webhook)
+          </p>
           <button
             onClick={loadMonthlyData}
             disabled={loadingMonthly}
-            style={{
-              padding: '6px 12px',
-              backgroundColor: '#3b82f6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: loadingMonthly ? 'not-allowed' : 'pointer',
-              fontSize: '13px',
-              opacity: loadingMonthly ? 0.6 : 1,
-              transition: 'opacity 0.2s'
-            }}
+            className="period-btn active"
+            style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem' }}
             title="Refresh monthly data from webhook"
           >
             {loadingMonthly ? '⏳ Loading...' : '🔄 Refresh Monthly'}
@@ -811,148 +1036,116 @@ export default function ConsultantDetail({ consultant, allConsultants }) {
         </div>
 
         {loadingMonthly ? (
-          <div style={{textAlign: 'center', padding: '30px', color: '#94a3b8'}}>
+          <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
             <p>⏳ Loading monthly breakdown...</p>
           </div>
         ) : !bestWorstAnalysis.best && !bestWorstAnalysis.worst ? (
-          <div style={{textAlign: 'center', padding: '30px', color: '#94a3b8'}}>
+          <div style={{ textAlign: 'center', padding: '30px', color: '#94a3b8' }}>
             <p>📊 No monthly data available</p>
           </div>
         ) : (
-          <>
+          <div className="analytics-grid" style={{ marginBottom: 0 }}>
             {/* Monthly Trend Chart */}
             {monthlyTrendData.length > 0 && (
-              <div style={{marginBottom: '30px', padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)'}}>
-                <h4 style={{margin: '0 0 15px 0', fontSize: '15px', color: '#475569'}}>
-                  📊 Monthly Performance Trend (Last 12 Months)
-                </h4>
-                <ResponsiveContainer width="100%" height={350}>
-                  <ComposedChart data={monthlyTrendData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis 
-                      dataKey="month" 
-                      tick={{ fontSize: 11, fill: '#64748b' }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis 
-                      yAxisId="left"
-                      tick={{ fontSize: 11, fill: '#64748b' }}
-                      label={{ value: 'Appointments', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: '#64748b' } }}
-                    />
-                    <YAxis 
-                      yAxisId="right"
-                      orientation="right"
-                      tick={{ fontSize: 11, fill: '#64748b' }}
-                      label={{ value: 'Show Rate %', angle: 90, position: 'insideRight', style: { fontSize: 12, fill: '#64748b' } }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.98)', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
-                      formatter={(value, name) => {
-                        if (name === 'Show Rate') return [value + '%', name];
-                        return [value, name];
-                      }}
-                    />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '15px' }}
-                      iconType="rect"
-                    />
-                    
-                    {/* Stacked Bar - One bar per month showing all statuses */}
-                    <Bar 
-                      yAxisId="left"
-                      dataKey="showed" 
-                      stackId="a"
-                      name="Showed"
-                      fill="#10b981"
-                      radius={[0, 0, 0, 0]}
-                    />
-                    <Bar 
-                      yAxisId="left"
-                      dataKey="confirmed" 
-                      stackId="a"
-                      name="Confirmed"
-                      fill="#06b6d4"
-                      radius={[0, 0, 0, 0]}
-                    />
-                    <Bar 
-                      yAxisId="left"
-                      dataKey="noshow" 
-                      stackId="a"
-                      name="No Show"
-                      fill="#ef4444"
-                      radius={[0, 0, 0, 0]}
-                    />
-                    <Bar 
-                      yAxisId="left"
-                      dataKey="cancelled" 
-                      stackId="a"
-                      name="Cancelled"
-                      fill="#f59e0b"
-                      radius={[4, 4, 0, 0]}
-                    />
+              <Card title="Monthly Performance Trend (Last 12 Months)" className="chart-card wide">
+                <div className="chart-wrapper">
+                  <ResponsiveContainer width="100%" height={350}>
+                    <ComposedChart data={monthlyTrendData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e3e6f0" />
+                      <XAxis
+                        dataKey="month"
+                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                      />
+                      <YAxis
+                        yAxisId="left"
+                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        label={{ value: 'Appointments', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: '#64748b' } }}
+                      />
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        label={{ value: 'Show Rate %', angle: 90, position: 'insideRight', style: { fontSize: 12, fill: '#64748b' } }}
+                      />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                        formatter={(value, name) => {
+                          if (name === 'Show Rate') return [value + '%', name];
+                          return [value, name];
+                        }}
+                      />
+                      <Legend wrapperStyle={{ paddingTop: '15px' }} iconType="rect" />
+                      
+                      {/* Stacked Bar */}
+                      <Bar yAxisId="left" dataKey="showed" stackId="a" name="Showed" fill="#10b981" />
+                      <Bar yAxisId="left" dataKey="confirmed" stackId="a" name="Confirmed" fill="#06b6d4" />
+                      <Bar yAxisId="left" dataKey="noshow" stackId="a" name="No Show" fill="#ef4444" />
+                      <Bar yAxisId="left" dataKey="cancelled" stackId="a" name="Cancelled" fill="#f59e0b" radius={[4, 4, 0, 0]} />
 
-                    {/* Show Rate Trend Line */}
-                    <Line 
-                      yAxisId="right"
-                      type="monotone" 
-                      dataKey="showRate" 
-                      stroke="#059669" 
-                      strokeWidth={3}
-                      name="Show Rate"
-                      dot={{ fill: '#059669', r: 5 }}
-                      activeDot={{ r: 7 }}
-                    />
-                  </ComposedChart>
-                </ResponsiveContainer>
-                <p style={{margin: '10px 0 0 0', fontSize: '11px', color: '#94a3b8', textAlign: 'center'}}>
-                  One stacked bar per month: 🟢 Showed + 🔵 Confirmed + 🔴 No Show + 🟠 Cancelled | Line: Show Rate %
-                </p>
-              </div>
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="showRate"
+                        stroke="#059669"
+                        strokeWidth={3}
+                        name="Show Rate"
+                        dot={{ fill: '#059669', r: 5 }}
+                        activeDot={{ r: 7 }}
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
             )}
 
             {/* Best/Worst Month Cards */}
-            <div className="insights-row" style={{gap: '20px', display: 'flex', flexWrap: 'wrap'}}>
+            <div className="analytics-grid" style={{ gridColumn: 'span 4', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
               {/* Best Month Card */}
               {bestWorstAnalysis.best && (
-                <div className="insight-card" style={{flex: '1', minWidth: '280px', borderLeft: '4px solid #10b981', backgroundColor: 'white'}}>
-                  <h4 style={{margin: '0 0 12px 0', fontSize: '16px', color: '#059669'}}>🏆 Best Month</h4>
-                  <p style={{margin: '0 0 8px 0', fontSize: '14px', color: '#64748b', fontWeight: '600'}}>
+                <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '12px', borderLeft: '4px solid #10b981', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#059669', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>🏆</span> Best Month
+                  </h4>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#64748b', fontWeight: '600' }}>
                     {bestWorstAnalysis.best.label}
                   </p>
-                  <p style={{margin: '0 0 12px 0', fontSize: '24px', color: '#10b981', fontWeight: '700'}}>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '24px', color: '#10b981', fontWeight: '700' }}>
                     {bestWorstAnalysis.best.appointments} Appointments
                   </p>
-                  <p style={{margin: '0', fontSize: '13px', color: '#475569'}}>
-                    {bestWorstAnalysis.best.showRate}% show rate • Score: {bestWorstAnalysis.best.score}
-                  </p>
+                  <div style={{ fontSize: '13px', color: '#475569', display: 'flex', gap: '12px' }}>
+                    <span style={{ fontWeight: 500 }}>{bestWorstAnalysis.best.showRate}% show rate</span>
+                    <span style={{ color: '#cbd5e1' }}>•</span>
+                    <span>Score: {bestWorstAnalysis.best.score}</span>
+                  </div>
                 </div>
               )}
 
               {/* Worst Month Card */}
               {bestWorstAnalysis.worst && (
-                <div className="insight-card" style={{flex: '1', minWidth: '280px', borderLeft: '4px solid #ef4444', backgroundColor: 'white'}}>
-                  <h4 style={{margin: '0 0 12px 0', fontSize: '16px', color: '#dc2626'}}>⚠️ Weakest Month</h4>
-                  <p style={{margin: '0 0 8px 0', fontSize: '14px', color: '#64748b', fontWeight: '600'}}>
+                <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '12px', borderLeft: '4px solid #ef4444', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>⚠️</span> Weakest Month
+                  </h4>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#64748b', fontWeight: '600' }}>
                     {bestWorstAnalysis.worst.label}
                   </p>
-                  <p style={{margin: '0 0 12px 0', fontSize: '24px', color: '#ef4444', fontWeight: '700'}}>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '24px', color: '#ef4444', fontWeight: '700' }}>
                     {bestWorstAnalysis.worst.appointments} Appointments
                   </p>
-                  <p style={{margin: '0', fontSize: '13px', color: '#475569'}}>
-                    {bestWorstAnalysis.worst.showRate}% show rate • Score: {bestWorstAnalysis.worst.score}
-                  </p>
+                  <div style={{ fontSize: '13px', color: '#475569', display: 'flex', gap: '12px' }}>
+                    <span style={{ fontWeight: 500 }}>{bestWorstAnalysis.worst.showRate}% show rate</span>
+                    <span style={{ color: '#cbd5e1' }}>•</span>
+                    <span>Score: {bestWorstAnalysis.worst.score}</span>
+                  </div>
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
-
-        <p style={{marginTop: '15px', marginBottom: '0', fontSize: '11px', color: '#94a3b8', textAlign: 'center'}}>
-          ⚠️ Monthly data fetched from separate webhook service
-        </p>
-      </div>
+      </Card>
       {/* ========== END SEPARATE MONTHLY SECTION ========== */}
     </div>
   );

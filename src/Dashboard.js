@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  BarChart2, 
+  Users, 
+  Megaphone, 
+  Database, 
+  RefreshCw, 
+  Download, 
+  LogOut,
+  LayoutDashboard,
+  Menu,
+  X,
+  TrendingUp
+} from 'lucide-react';
 import './Dashboard.css';
+import './NewLayout.css';
 import DataViewer from './DataViewer';
 import ConsultantSelector from './components/Consultants/ConsultantSelector';
 import exportNodeAsPdf from './utils/pdfExport';
@@ -12,6 +26,7 @@ import {
 import MetaAds from './components/MetaAds/MetaAds';
 import Sources from './components/Sources/Sources';
 import GoogleAds from './components/GoogleAds/GoogleAds';
+import API_CONFIG from './config/apiConfig';
 
 const CACHE_KEY = 'dashboardData';
 
@@ -22,7 +37,7 @@ function Dashboard({ onLogout }) {
   const [error, setError] = useState(null);
   const [dataFreshness, setDataFreshness] = useState(null); // Track data freshness
   const [isCached, setIsCached] = useState(false); // Track if data is from cache
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Initialize IndexedDB on component mount
   useEffect(() => {
@@ -61,7 +76,7 @@ function Dashboard({ onLogout }) {
     setError(null);
     
     try {
-      const response = await fetch('https://n8n.aiclinicgenius.com/webhook/airtable');
+      const response = await fetch(API_CONFIG.AIRTABLE_WEBHOOK);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -94,168 +109,178 @@ function Dashboard({ onLogout }) {
 
   const handleRefresh = () => {
     fetchData(true); // Force refresh ignoring cache
-    // ℹ️ NOTE: This refresh button only refreshes MAIN DASHBOARD DATA from Airtable webhook
-    // Monthly data has its own SEPARATE refresh button on the consultant detail page
-    // This keeps the two data sources independent and prevents response mixing
   };
 
-  const selectTab = (tab) => {
-    setActiveTab(tab);
-    setMenuOpen(false);
-  };
-
-  const handleRefreshAndClose = () => {
-    setMenuOpen(false);
-    handleRefresh();
-  };
-
-  const handleLogout = () => {
-    setMenuOpen(false);
-    onLogout();
+  const handleExport = () => {
+    if (activeTab === 'totals') {
+      exportNodeAsPdf('dashboard-root', { filename: 'dashboard-report.pdf' });
+    } else if (activeTab === 'metaAds') {
+      exportNodeAsPdf('meta-ads-root', { filename: 'meta-ads-report.pdf' });
+    } else if (activeTab === 'sources') {
+      exportNodeAsPdf('sources-root', { filename: 'sources-report.pdf' });
+    } else if (activeTab === 'googleAds') {
+      exportNodeAsPdf('google-ads-root', { filename: 'google-ads-report.pdf' });
+    }
+    // Note: Consultants page has its own export in ConsultantHeader
   };
 
   return (
-    <div id="dashboard-root" className="dashboard-container">
-      <nav className="dashboard-nav pdf-hide">
-        <div className="nav-left">
-          <h2>Franchise Experts</h2>
-          {dataFreshness && (
-            <span className="data-freshness" title={isCached ? 'Data from browser cache' : 'Live data from webhook'}>
-              {dataFreshness}
+    <div id="dashboard-root" className="dashboard-layout">
+      {/* Sidebar Navigation */}
+      <aside className={`sidebar pdf-hide ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        <div className="sidebar-header">
+          <div className="sidebar-brand">
+            <span className="brand-text">
+              <span style={{color: '#2c5282'}}>Franchise</span>
+              <span style={{color: '#ed8936'}}>Experts</span>
             </span>
-          )}
-        </div>
-        <div className="nav-dropdown">
-          <button
-            className="nav-dropdown-trigger"
-            onClick={() => setMenuOpen((open) => !open)}
-            aria-haspopup="true"
-            aria-expanded={menuOpen}
+          </div>
+          <button 
+            className="sidebar-toggle"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            ☰ Menu
+            {sidebarCollapsed ? <Menu size={20} /> : <X size={20} />}
           </button>
-          {menuOpen && (
-            <div className="nav-dropdown-menu" role="menu">
-              <button
-                role="menuitem"
-                className={`nav-dropdown-item ${activeTab === 'totals' ? 'active' : ''}`}
-                onClick={() => selectTab('totals')}
-              >
-                Totals
-              </button>
-              <button
-                role="menuitem"
-                className={`nav-dropdown-item ${activeTab === 'consultants' ? 'active' : ''}`}
-                onClick={() => selectTab('consultants')}
-              >
-                Consultants
-              </button>
-              <button
-                role="menuitem"
-                className={`nav-dropdown-item ${activeTab === 'metaAds' ? 'active' : ''}`}
-                onClick={() => selectTab('metaAds')}
-              >
-                Meta Ads
-              </button>
-              <button
-                role="menuitem"
-                className={`nav-dropdown-item ${activeTab === 'googleAds' ? 'active' : ''}`}
-                onClick={() => selectTab('googleAds')}
-              >
-                Google Ads
-              </button>
-              <button
-                role="menuitem"
-                className={`nav-dropdown-item ${activeTab === 'sources' ? 'active' : ''}`}
-                onClick={() => selectTab('sources')}
-              >
-                Sources
-              </button>
-
-              <div className="nav-dropdown-divider" />
-
-              <button
-                role="menuitem"
-                className="nav-dropdown-item"
-                onClick={handleRefreshAndClose}
-                disabled={loading}
-              >
-                {loading ? 'Loading...' : 'Refresh Data'}
-              </button>
-
-              {activeTab === 'totals' && (
-                <button
-                  role="menuitem"
-                  className="nav-dropdown-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    exportNodeAsPdf('dashboard-root', { filename: 'dashboard-report.pdf' });
-                  }}
-                >
-                  Export Dashboard PDF
-                </button>
-              )}
-
-              {activeTab === 'metaAds' && (
-                <button
-                  role="menuitem"
-                  className="nav-dropdown-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    exportNodeAsPdf('meta-ads-root', { filename: 'meta-ads-report.pdf' });
-                  }}
-                >
-                  Export Meta Ads PDF
-                </button>
-              )}
-
-              <div className="nav-dropdown-divider" />
-
-              <button
-                role="menuitem"
-                className="nav-dropdown-item logout"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
-            </div>
-          )}
         </div>
-      </nav>
+        
+        <div className="nav-section">
+          <button 
+            className={`nav-item ${activeTab === 'totals' ? 'active' : ''}`}
+            onClick={() => setActiveTab('totals')}
+            title="Analytics"
+          >
+            <BarChart2 size={20} />
+            {!sidebarCollapsed && <span>Analytics</span>}
+          </button>
+          
+          <button 
+            className={`nav-item ${activeTab === 'consultants' ? 'active' : ''}`}
+            onClick={() => setActiveTab('consultants')}
+            title="Consultants"
+          >
+            <Users size={20} />
+            {!sidebarCollapsed && <span>Consultants</span>}
+          </button>
+          
+          <button 
+            className={`nav-item ${activeTab === 'metaAds' ? 'active' : ''}`}
+            onClick={() => setActiveTab('metaAds')}
+            title="Meta Ads"
+          >
+            <Megaphone size={20} />
+            {!sidebarCollapsed && <span>Meta Ads</span>}
+          </button>
+          
+          <button 
+            className={`nav-item ${activeTab === 'sources' ? 'active' : ''}`}
+            onClick={() => setActiveTab('sources')}
+            title="Sources"
+          >
+            <Database size={20} />
+            {!sidebarCollapsed && <span>Sources</span>}
+          </button>
+          
+          <button 
+            className={`nav-item ${activeTab === 'googleAds' ? 'active' : ''}`}
+            onClick={() => setActiveTab('googleAds')}
+            title="Google Ads"
+          >
+            <TrendingUp size={20} />
+            {!sidebarCollapsed && <span>Google Ads</span>}
+          </button>
+        </div>
 
-      <div className="dashboard-content">
-        {activeTab === 'totals' && (
-          <div className="data-viewer">
+        <div className="nav-divider" />
+
+        <div className="nav-section">
+          <button className="nav-item" onClick={onLogout} title="Logout">
+            <LogOut size={20} />
+            {!sidebarCollapsed && <span>Logout</span>}
+          </button>
+        </div>
+        
+        {dataFreshness && !sidebarCollapsed && (
+          <div className="data-freshness">
+            {dataFreshness}
+          </div>
+        )}
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="main-content">
+        <header className="top-header pdf-hide">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button 
+              className="mobile-menu-toggle"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              style={{
+                display: 'none',
+                background: 'none',
+                border: 'none',
+                padding: '0.5rem',
+                cursor: 'pointer',
+                color: 'var(--text-secondary)'
+              }}
+            >
+              <Menu size={24} />
+            </button>
+            <h1 className="page-title">
+              {activeTab === 'totals' && 'Franchise Analytics'}
+              {activeTab === 'consultants' && 'Consultant Performance'}
+              {activeTab === 'metaAds' && 'Meta Ads Overview'}
+              {activeTab === 'sources' && 'Lead Sources'}
+              {activeTab === 'googleAds' && 'Google Ads'}
+            </h1>
+          </div>
+          
+          <div className="header-actions">
+            <button className="btn-action" onClick={handleRefresh} disabled={loading}>
+              <RefreshCw size={16} className={loading ? 'spin' : ''} />
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </button>
+            
+            {(activeTab === 'totals' || activeTab === 'metaAds' || activeTab === 'sources' || activeTab === 'googleAds') && (
+              <button className="btn-action btn-primary" onClick={handleExport}>
+                <Download size={16} />
+                Export PDF
+              </button>
+            )}
+          </div>
+        </header>
+
+        <div className="dashboard-content">
+          {activeTab === 'totals' && (
             <DataViewer
               data={data}
               loading={loading}
               error={error}
             />
-          </div>
-        )}
+          )}
 
-        {activeTab === 'consultants' && (
-          <div>
-            {data && data.consultants && data.consultants.length > 0 ? (
-              <ConsultantSelector data={data.consultants} />
-            ) : (
-              <p>Loading consultants data…</p>
-            )}
-          </div>
-        )}
+          {activeTab === 'consultants' && (
+            <div>
+              {data && data.consultants && data.consultants.length > 0 ? (
+                <ConsultantSelector data={data.consultants} />
+              ) : (
+                <p>Loading consultants data…</p>
+              )}
+            </div>
+          )}
 
-        {activeTab === 'metaAds' && (
-          <MetaAds />
-        )}
+          {activeTab === 'metaAds' && (
+            <MetaAds />
+          )}
 
-        {activeTab === 'googleAds' && (
-          <GoogleAds />
-        )}
+          {activeTab === 'sources' && (
+            <Sources />
+          )}
 
-        {activeTab === 'sources' && (
-          <Sources />
-        )}
-      </div>
+          {activeTab === 'googleAds' && (
+            <GoogleAds />
+          )}
+        </div>
+      </main>
     </div>
   );
 }

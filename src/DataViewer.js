@@ -18,7 +18,14 @@ export default function DataViewer({ data, loading, error }) {
       <div className="controls">
         {data && data.totals && (
           <div className="data-info">
-            Data loaded • Last updated: {new Date(data.totals.last_updated).toLocaleString()}
+            Data loaded • Last updated: {(() => {
+              try {
+                const d = new Date(data.totals.last_updated);
+                return isNaN(d.getTime()) ? 'Recently' : d.toLocaleString();
+              } catch (e) {
+                return 'Recently';
+              }
+            })()}
           </div>
         )}
         

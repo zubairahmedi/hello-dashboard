@@ -1,0 +1,108 @@
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.analytics-grid.kpi-row {
+  margin-bottom: 2rem;
+}
+
+/* Charts usually span 2 columns */
+.chart-card {
+  min-height: 300px;
+  background: white !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  padding: 1.5rem !important;
+  border-radius: 12px !important;
+  box-sizing: border-box !important;
+  margin-bottom: 0 !important;
+}
+
+/* Use these explicit span classes when in a grid */
+.chart-card.span-2 {
+  grid-column: span 2;
+}
+
+/* Wide charts span 4 columns */
+.chart-card.wide {
+  grid-column: span 4;
+}
+
+/* Row layouts for consultant page */
+.trends-row {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.breakdowns-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.two-col-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.period-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: white;
+  padding: 0.75rem;
+  border-radius: 12px;
+  width: fit-content;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.period-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.period-btn:hover {
+  background-color: #f7fafc;
+  color: var(--primary-accent);
+}
+
+.period-btn.active {
+  background-color: var(--primary-accent);
+  color: white;
+}
+
+/* Responsive adjust */
+@media (max-width: 1200px) {
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-card {
+    grid-column: span 1;
+  }
+  
+  .chart-card.wide {
+    grid-column: span 1;
+  }
+}

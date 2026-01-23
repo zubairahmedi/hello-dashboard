@@ -23,7 +23,7 @@ import {
   META_ADS_MERGED_KEY,
   isDeltaConfigured
 } from '../../utils/metaAdsService';
-import { buildMonthOptions, filterRowsByMonth, buildYearOptions } from '../../utils/timeFilterService';
+import { buildMonthOptions, filterRowsByMonth } from '../../utils/timeFilterService';
 import {
   fetchConsultantMetaAds,
   CONSULTANT_META_ADS_KEY
@@ -41,7 +41,6 @@ const ACCOUNT_TABS = [
 ];
 
 function MetaAds() {
-  console.log('[MetaAds] Component rendering');
   const [mergedData, setMergedData] = useState(null);
   const [dataFreshness, setDataFreshness] = useState(null);
   const [isCached, setIsCached] = useState(false);
@@ -57,7 +56,6 @@ function MetaAds() {
   const [consultantData, setConsultantData] = useState(null);
   const [consultantLoading, setConsultantLoading] = useState(false);
   const [consultantDataFreshness, setConsultantDataFreshness] = useState(null);
-  const [selectedYear, setSelectedYear] = useState(null); // For yearly view filtering
 
   // Load cached merged data on mount and run a quick delta update
   useEffect(() => {
@@ -241,35 +239,21 @@ function MetaAds() {
   }, [mainViewMode, consultantData, handleConsultantRefresh]);
 
   const dataArray = Array.isArray(mergedData) ? mergedData : [];
+  
+  // Debug logging
+  console.log('[MetaAds] Data state:', { 
+    mergedData: mergedData ? 'exists' : 'null', 
+    dataArrayLength: dataArray.length,
+    selectedAccount
+  });
 
   const monthOptions = React.useMemo(() => buildMonthOptions(dataArray), [dataArray]);
-  
-  const yearOptions = React.useMemo(() => {
-    console.log('[MetaAds] yearOptions useMemo executing...', { selectedAccount, dataArrayLength: dataArray.length });
-    // For account-specific views, build year options from account data
-    // For overview, build from all data
-    if (selectedAccount && selectedAccount !== 'Account Overview') {
-      let accountRows = dataArray.filter((row) => row?.accountname === selectedAccount);
-      const options = buildYearOptions(accountRows);
-      console.log('[MetaAds] Building yearOptions for account:', { selectedAccount, accountRowsCount: accountRows.length, yearOptionsCount: options.length, yearOptions: options });
-      return options;
-    }
-    const options = buildYearOptions(dataArray);
-    console.log('[MetaAds] Building yearOptions for all data:', { dataArrayCount: dataArray.length, yearOptionsCount: options.length });
-    return options;
-  }, [dataArray, selectedAccount]);
 
   useEffect(() => {
     if (!selectedMonthKey && monthOptions.length > 0) {
       setSelectedMonthKey(monthOptions[0].key);
     }
   }, [monthOptions, selectedMonthKey]);
-
-  useEffect(() => {
-    if (!selectedYear && yearOptions.length > 0) {
-      setSelectedYear(yearOptions[0].value); // Default to latest year
-    }
-  }, [yearOptions, selectedYear]);
 
   // All data for the selected account (no month filter)
   const accountData = React.useMemo(() => {
@@ -315,22 +299,6 @@ function MetaAds() {
                 {dataFreshness}
               </span>
             )}
-            <button
-              className="refresh-button hard-refresh"
-              onClick={handleHardRefresh}
-              disabled={hardLoading || quickLoading}
-              title="Fetch latest aggregated data from n8n"
-            >
-              {hardLoading ? 'Fetching…' : 'Refresh Data'}
-            </button>
-            <button
-              className="refresh-button quick-refresh"
-              onClick={handleQuickUpdate}
-              disabled={hardLoading || quickLoading}
-              title="Fetch only updated rows since last update (faster)"
-            >
-              {quickLoading ? 'Updating…' : 'Quick Update'}
-            </button>
           </div>
         )}
       </div>
@@ -339,35 +307,36 @@ function MetaAds() {
       {error && <div className="meta-ads-error">{error}</div>}
 
       {/* Main View Switcher */}
-      <div className="main-view-switcher">
+      <div className="period-selector" style={{ marginBottom: '1.5rem', background: 'white', padding: '0.5rem', borderRadius: '8px', border: '1px solid #edf2f7' }}>
         <button
-          className={`main-view-btn ${mainViewMode === 'accounts' ? 'active' : ''}`}
+          className={`period-btn ${mainViewMode === 'accounts' ? 'active' : ''}`}
           onClick={() => setMainViewMode('accounts')}
         >
           Accounts View
         </button>
         <button
-          className={`main-view-btn ${mainViewMode === 'consultants' ? 'active' : ''}`}
+          className={`period-btn ${mainViewMode === 'consultants' ? 'active' : ''}`}
           onClick={() => setMainViewMode('consultants')}
         >
           Consultants View
         </button>
       </div>
 
-      <div className="meta-ads-placeholder-card">
+      <div className="meta-ads-content">
         {mainViewMode === 'accounts' ? (
           <>
-            <h3>Meta Ads Performance</h3>
-            <p>Select an account tab to view detailed metrics and charts</p>
+            <div className="dashboard-header" style={{ marginBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1.5rem', color: '#1e293b' }}>Meta Ads Performance</h3>
+            </div>
             {!mergedData && <p className="muted">No Meta Ads data loaded yet. Click "Refresh Data" to fetch.</p>}
 
         {/* Account tabs */}
-        <div className="meta-ads-filters pdf-hide">
-          <div className="meta-ads-tabs" role="tablist">
+        <div className="meta-ads-filters pdf-hide" style={{ marginBottom: '2rem' }}>
+          <div className="period-selector" role="tablist" style={{ flexWrap: 'wrap' }}>
             {ACCOUNT_TABS.map((acct) => (
               <button
                 key={acct}
-                className={`meta-ads-tab ${acct === selectedAccount ? 'active' : ''}`}
+                className={`period-btn ${acct === selectedAccount ? 'active' : ''}`}
                 onClick={() => setSelectedAccount(acct)}
               >
                 {acct}
@@ -395,7 +364,7 @@ function MetaAds() {
         {selectedAccount && selectedAccount !== 'Account Overview' ? (
           (() => {
             const monthMeta = monthOptions.find((m) => m.key === selectedMonthKey);
-            console.log('[MetaAds] Rendering view with:', { selectedAccount, viewMode, selectedMonthKey, monthMeta, dataLength: filteredData?.length, yearOptions, yearOptionsLength: yearOptions?.length });
+            console.log('[MetaAds] Rendering view with:', { selectedAccount, viewMode, selectedMonthKey, monthMeta, dataLength: filteredData?.length });
             return (
               <>
                 {/* Mini Tab Switcher */}
@@ -420,13 +389,7 @@ function MetaAds() {
                     <MonthComparison data={accountData} accountName={selectedAccount} monthOptions={monthOptions} />
                   </>
                 ) : (
-                  <YearlyView 
-                    data={accountData} 
-                    accountName={selectedAccount}
-                    selectedYear={selectedYear}
-                    setSelectedYear={setSelectedYear}
-                    yearOptions={yearOptions}
-                  />
+                  <YearlyView data={accountData} accountName={selectedAccount} />
                 )}
               </>
             );
@@ -438,28 +401,7 @@ function MetaAds() {
         {/* Raw data preview removed per request */}
           </>
         ) : (
-          <>
-            <div className="consultant-view-header">
-              <div>
-                <h3>Consultants View</h3>
-                <p className="muted">Tagged contacts by consultant across campaigns</p>
-                {consultantDataFreshness && (
-                  <span className="data-freshness" style={{ fontSize: '12px', marginTop: '8px', display: 'inline-block' }}>
-                    {consultantDataFreshness}
-                  </span>
-                )}
-              </div>
-              <button
-                className="refresh-button hard-refresh"
-                onClick={handleConsultantRefresh}
-                disabled={consultantLoading}
-                title="Fetch latest consultant data"
-              >
-                {consultantLoading ? 'Fetching…' : 'Refresh Consultant Data'}
-              </button>
-            </div>
-            <ConsultantMetaAdsView data={consultantData} />
-          </>
+          <ConsultantMetaAdsView data={consultantData} />
         )}
       </div>
     </div>
