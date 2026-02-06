@@ -39,20 +39,10 @@ function round2(n) {
   return Math.round(x * 100) / 100;
 }
 
-// Account/Category tabs
-const CATEGORY_TABS = [
-  { key: 'all', label: 'All Categories' },
-  { key: 'MFE - FOOD', label: 'Food' },
-  { key: 'MFE - RECREATION', label: 'Recreation' },
-  { key: 'MFE - HOME', label: 'Home' },
-  { key: 'MFE - PET', label: 'Pet' },
-  { key: 'MFE - BEAUTY', label: 'Beauty' },
-  { key: 'MFE - FINANCIAL', label: 'Financial' }
-];
+// Category filter removed - now using campaign-based structure
 
 function OverviewView({ data }) {
   const rows = Array.isArray(data) ? data : [];
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'totalspend', direction: 'desc' });
   
@@ -74,11 +64,10 @@ function OverviewView({ data }) {
     }
   }, [yearOptions, selectedYear]);
 
-  // Filter rows by selected category
+  // All rows (no category filter)
   const filteredRows = useMemo(() => {
-    if (selectedCategory === 'all') return rows;
-    return rows.filter(r => r?.accountname === selectedCategory);
-  }, [rows, selectedCategory]);
+    return rows;
+  }, [rows]);
 
   // Calculate Global KPIs
   const kpis = useMemo(() => {
@@ -125,8 +114,11 @@ function OverviewView({ data }) {
       const mi = toNumber(r?.month_index, null);
       if (mi === null) return;
       
+      // API returns 1-based month indices; convert to 0-based for MONTHS array access
+      const monthIdx0Based = mi - 1;
+      
       const cur = byMonth.get(mi) || { 
-        month: MONTHS[mi] || '', 
+        month: MONTHS[monthIdx0Based] || '', 
         monthIndex: mi,
         spend: 0, 
         leads: 0,
@@ -153,8 +145,6 @@ function OverviewView({ data }) {
 
   // Category breakdown for pie chart
   const categoryBreakdown = useMemo(() => {
-    if (selectedCategory !== 'all') return [];
-    
     const monthlyRows = rows.filter(r => 
       r?._aggregation_type === 'monthly_campaign' && 
       toNumber(r?.year, null) === selectedYear
@@ -172,7 +162,7 @@ function OverviewView({ data }) {
     return Array.from(byAccount.values())
       .filter(d => d.spend > 0)
       .sort((a, b) => b.spend - a.spend);
-  }, [rows, selectedYear, selectedCategory]);
+  }, [rows, selectedYear]);
 
   // Yearly per-account aggregation for selected year
   const yearlyAccountRows = useMemo(() => {
@@ -339,23 +329,10 @@ function OverviewView({ data }) {
         </select>
       </div>
 
-      {/* Category Pills */}
-      <div className="meta-category-pills">
-        {CATEGORY_TABS.map(cat => (
-          <button
-            key={cat.key}
-            className={`meta-category-pill ${selectedCategory === cat.key ? 'active' : ''}`}
-            onClick={() => setSelectedCategory(cat.key)}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
-
       {/* No data for selected filters message */}
       {!kpis && (
         <div className="meta-no-data-message">
-          <p>No data available for the selected year and category. Try selecting a different year or category.</p>
+          <p>No data available for the selected year. Try selecting a different year.</p>
         </div>
       )}
 
@@ -440,10 +417,10 @@ function OverviewView({ data }) {
           </div>
         </div>
 
-        {/* Category Breakdown */}
-        {selectedCategory === 'all' && categoryBreakdown.length > 0 && (
+        {/* Campaign Breakdown */}
+        {categoryBreakdown.length > 0 && (
           <div className="meta-chart-card meta-chart-small">
-            <h3 className="meta-section-title">Spend by Category</h3>
+            <h3 className="meta-section-title">Spend by Campaign</h3>
             <div className="meta-chart-wrapper">
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
