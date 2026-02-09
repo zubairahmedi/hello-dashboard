@@ -12,23 +12,38 @@ function Login({ onLogin }) {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
-    // Simulate network delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Credentials validation
-    // Allow either the main admin email OR the developer email
-    const VALID_EMAILS = [
-      process.env.REACT_APP_LOGIN_EMAIL || 'admin@franchiseexperts.com',
-      'dev@lincroftdigital.com'
-    ];
-    const VALID_PASSWORD = process.env.REACT_APP_LOGIN_PASSWORD || 'demo123';
-    
-    if (VALID_EMAILS.includes(email) && password === VALID_PASSWORD) {
-      onLogin();
-      setError('');
-    } else {
-      setError('Invalid email or password');
+    const WEBHOOK_URL = process.env.REACT_APP_LOGIN_WEBHOOK || 'https://n8n.franchisedataexpert.com/webhook/login';
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (res.ok) {
+        let resultFlag = '';
+        try {
+          const data = await res.json();
+          const resultVal = Array.isArray(data) ? data[0]?.result : data?.result;
+          resultFlag = typeof resultVal === 'string' ? resultVal.toLowerCase() : '';
+        } catch (_) {
+          resultFlag = '';
+        }
+
+        if (resultFlag === 'found') {
+          onLogin();
+          setError('');
+        } else {
+          setError('Invalid email or password');
+          setIsLoading(false);
+        }
+      } else {
+        setError('Login failed. Please try again.');
+        setIsLoading(false);
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
       setIsLoading(false);
     }
   };

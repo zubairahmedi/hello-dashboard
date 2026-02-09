@@ -1,17 +1,10 @@
 // Meta Ads service helpers
-// Each account has its own webhook that returns aggregated monthly data
+// Single webhook returns all campaign data with monthly breakdown
 
-// Account webhook URLs (one per account)
-const ACCOUNT_WEBHOOKS = {
-  'MFE - BEAUTY': 'https://n8n.aiclinicgenius.com/webhook/Meta_Ads_part1',
-  'MFE - FOOD': 'https://n8n.aiclinicgenius.com/webhook/mfe-food',
-  'MFE - RECREATION': 'https://n8n.aiclinicgenius.com/webhook/mfe-recreation',
-  'MFE - HOME': 'https://n8n.aiclinicgenius.com/webhook/mfe-home',
-  'MFE - PET': 'https://n8n.aiclinicgenius.com/webhook/mfe-pet',
-  'MFE - FINANCIAL': 'https://n8n.aiclinicgenius.com/webhook/mfe_financial',
-};
+// Single Meta Ads webhook URL
+const META_ADS_WEBHOOK = process.env.REACT_APP_META_ADS_WEBHOOK || 'https://n8n.franchisedataexpert.com/webhook/meta_ads_all';
 
-export const isDeltaConfigured = () => true; // Delta webhook configured at Refresh_Hook
+export const isDeltaConfigured = () => true; // Delta uses same webhook as full data
 
 // Simple GET fetch like Dashboard.js uses for n8n webhooks
 const fetchJson = async (url) => {
@@ -46,79 +39,85 @@ const toArray = (payload) => {
   return [payload];
 };
 
-// Fetch data for a single account
-export async function fetchAccountData(accountName) {
-  const url = ACCOUNT_WEBHOOKS[accountName];
-  if (!url) {
-    throw new Error(`No webhook configured for account: ${accountName}`);
-  }
+// Transform webhook data to add required fields for UI
+function transformMetaAdsData(item) {
+  // Calculate CTR if not present
+  const impressions = toNumber(item.impressions || 0);
+  const clicks = toNumber(item.link_click || 0);
+  const spend = toNumber(item.totalspend || 0);
+  // Store as decimal (0-1), NOT percentage, for weighted calculations in UI
+  const ctr = impressions > 0 ? clicks / impressions : 0;
+  const engagement_rate = impressions > 0 ? clicks / impressions : 0;
+  const cpm = impressions > 0 ? (spend / impressions) * 1000 : 0;
   
-  console.info(`[MetaAds] Fetching data for account: ${accountName}`);
-  const data = await fetchJson(url);
   return {
-    accountName,
-    data: toArray(data),
+    ...item,
+    // Add accountname for OverviewView filtering (aliases campaignname)
+    accountname: item.campaignname || item.accountname || 'Unknown',
+    // Add aggregation type for OverviewView filtering
+    _aggregation_type: 'monthly_campaign',
+    // Normalize status field (webhook uses compaignStatus with typo)
+    campaignstatus: item.compaignStatus || item.campaignstatus || item.status || 'UNKNOWN',
+    // Calculate missing metrics (stored as decimals, not percentages)
+    ctr: item.ctr || ctr,
+    engagement_rate: item.engagement_rate || engagement_rate,
+    cpm: item.cpm || cpm,
+    // Ensure numeric fields are numbers
+    impressions: impressions,
+    link_click: clicks,
+    totalspend: spend,
+    totalleads: toNumber(item.totalleads || item.leads || 0),
+    Reach: toNumber(item.Reach || item.reach || 0)
+  };
+}
+
+function toNumber(val, fallback = 0) {
+  const n = typeof val === 'string' ? parseFloat(val) : Number(val);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+// Fetch all campaign data from single webhook
+export async function fetchAllCampaigns() {
+  console.info(`[MetaAds] Fetching all campaign data...`);
+  const rawData = await fetchJson(META_ADS_WEBHOOK);
+  const data = toArray(rawData).map(transformMetaAdsData);
+  return {
+    data,
     lastUpdated: Date.now()
   };
 }
 
-// Fetch data for all configured accounts sequentially (to avoid webhook timeouts/CORS bursts)
+// Legacy function names (redirected to fetchAllCampaigns for compatibility)
+export async function fetchAccountData(accountName) {
+  console.info(`[MetaAds] fetchAccountData called (legacy), fetching all campaigns...`);
+  return await fetchAllCampaigns();
+}
+
 export async function fetchAllAccounts(onProgress) {
-  const accounts = Object.keys(ACCOUNT_WEBHOOKS).filter(acc => ACCOUNT_WEBHOOKS[acc]);
-  
-  if (accounts.length === 0) {
-    throw new Error('No account webhooks configured');
-  }
-
-  console.info(`[MetaAds] Fetching ${accounts.length} accounts sequentially...`);
-
-  const results = [];
-
-  for (const accountName of accounts) {
-    try {
-      if (onProgress) onProgress({ account: accountName, status: 'fetching' });
-      const result = await fetchAccountData(accountName);
-      if (onProgress) onProgress({ account: accountName, status: 'success', count: result.data.length });
-      results.push(result);
-    } catch (err) {
-      console.error(`[MetaAds] Failed to fetch ${accountName}:`, err);
-      if (onProgress) onProgress({ account: accountName, status: 'error', error: err.message });
-      results.push({ accountName, data: [], error: err.message });
-    }
-  }
-  
-  // Merge all account data into one array
-  const combined = results.flatMap(r => r.data);
-  const errors = results.filter(r => r.error);
-  
-  console.info(`[MetaAds] Fetched ${results.length} accounts, ${combined.length} total rows, ${errors.length} errors`);
-  
-  return {
-    data: combined,
-    lastUpdated: Date.now(),
-    accountResults: results,
-    errors: errors.length > 0 ? errors : null
-  };
+  console.info(`[MetaAds] fetchAllAccounts called (legacy), fetching all campaigns...`);
+  if (onProgress) onProgress({ status: 'fetching' });
+  const result = await fetchAllCampaigns();
+  if (onProgress) onProgress({ status: 'success', count: result.data.length });
+  return result;
 }
 
-// Legacy functions (kept for compatibility, will be removed later)
 export async function fetchFullMetaAdsParts() {
-  // For now, just fetch MFE - BEAUTY
-  return await fetchAccountData('MFE - BEAUTY');
+  console.info(`[MetaAds] fetchFullMetaAdsParts called (legacy), fetching all campaigns...`);
+  return await fetchAllCampaigns();
 }
 
-// New: Fetch data for a specific account (preferred over legacy function)
 export async function fetchMetaAdsForAccount(accountName) {
-  return await fetchAccountData(accountName);
+  console.info(`[MetaAds] fetchMetaAdsForAccount called (legacy), fetching all campaigns...`);
+  return await fetchAllCampaigns();
 }
 
-// Fetch delta (updated rows only) from n8n Refresh_Hook
+// Fetch delta (updated rows only) - now just fetches from main webhook and transforms
 export async function fetchDeltaMetaAds() {
-  const url = 'https://n8n.aiclinicgenius.com/webhook/Refresh_Hook';
-  console.info(`[MetaAds] Fetching delta from ${url}`);
-  const data = await fetchJson(url);
+  console.info(`[MetaAds] Fetching delta (using main webhook)`);
+  const rawData = await fetchJson(META_ADS_WEBHOOK);
+  const data = toArray(rawData).map(transformMetaAdsData);
   return {
-    data: toArray(data),
+    data,
     lastUpdated: Date.now()
   };
 }

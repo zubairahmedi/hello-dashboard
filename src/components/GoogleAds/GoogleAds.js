@@ -18,7 +18,7 @@ import '../../NewLayout.css';
 import '../../AnalyticsDashboard.css';
 import './GoogleAdsAccountView.css';
 
-const GOOGLE_ADS_WEBHOOK = process.env.REACT_APP_GOOGLE_ADS_WEBHOOK || 'https://n8n.aiclinicgenius.com/webhook/Google_Ads';
+const GOOGLE_ADS_WEBHOOK = process.env.REACT_APP_GOOGLE_ADS_WEBHOOK || 'https://n8n.franchisedataexpert.com/webhook/google_ads';
 
 const TIMEWINDOW_OPTIONS = [
   'Last 7 days',

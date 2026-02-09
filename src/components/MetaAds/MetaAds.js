@@ -14,9 +14,7 @@ import {
   getDataFreshnessMessage
 } from '../../utils/indexedDbService';
 import {
-  fetchFullMetaAdsParts,
-  fetchMetaAdsForAccount,
-  fetchAllAccounts,
+  fetchAllCampaigns,
   fetchDeltaMetaAds,
   mergeMetaAdsData,
   META_ADS_FULL_KEY,
@@ -29,18 +27,9 @@ import {
   CONSULTANT_META_ADS_KEY
 } from '../../utils/consultantMetaAdsService';
 
-// Fixed account tabs
-const ACCOUNT_TABS = [
-  'Account Overview',
-  'MFE - FOOD',
-  'MFE - RECREATION',
-  'MFE - HOME',
-  'MFE - PET',
-  'MFE - BEAUTY',
-  'MFE - FINANCIAL'
-];
+// Campaigns are now dynamic, generated from data
 
-function MetaAds() {
+function MetaAds({ onRefreshTrigger = 0 }) {
   const [mergedData, setMergedData] = useState(null);
   const [dataFreshness, setDataFreshness] = useState(null);
   const [isCached, setIsCached] = useState(false);
@@ -48,7 +37,8 @@ function MetaAds() {
   const [hardLoading, setHardLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [error, setError] = useState(null);
-  const [selectedAccount, setSelectedAccount] = useState('Account Overview');
+  const [loadProgress, setLoadProgress] = useState(0); // 0-100 percentage
+  const [selectedCampaign, setSelectedCampaign] = useState('All Campaigns');
   const [selectedMonthKey, setSelectedMonthKey] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [mainViewMode, setMainViewMode] = useState('accounts'); // 'accounts' or 'consultants'
@@ -138,30 +128,16 @@ function MetaAds() {
   const handleHardRefresh = useCallback(async () => {
     setHardLoading(true);
     setError(null);
-    const targetAccount = selectedAccount && selectedAccount !== 'Account Overview' ? selectedAccount : 'MFE - BEAUTY';
     setStatus(''); // Clear status during fetch
 
     try {
-      let combinedData;
-
-      if (selectedAccount === 'Account Overview') {
-        // Fetch all configured accounts in parallel and combine
-        const all = await fetchAllAccounts();
-        combinedData = all.data ?? [];
-      } else {
-        // Fetch only the selected account, then merge into existing cache so other accounts persist
-        const result = await fetchMetaAdsForAccount(targetAccount);
-        const incoming = result.data ?? [];
-
-        // Read base cached merged dataset
-        const baseCached = await getData(META_ADS_MERGED_KEY);
-        const baseData = baseCached?.data?.data || baseCached?.data || [];
-        const baseArray = Array.isArray(baseData) ? baseData : [];
-
-        // Remove old rows for the target account to avoid duplication
-        const baseWithoutTarget = baseArray.filter((row) => row?.accountname !== targetAccount);
-        combinedData = [...baseWithoutTarget, ...incoming];
-      }
+      // Fetch all campaigns from single webhook
+      setStatus('Loading campaigns...');
+      setLoadProgress(50);
+      
+      const result = await fetchAllCampaigns();
+      const combinedData = result.data ?? [];
+      setLoadProgress(100);
 
       const payload = { data: combinedData, lastUpdated: Date.now() };
       console.log('[MetaAds] Saving combined dataset:', { length: Array.isArray(combinedData) ? combinedData.length : 'not an array' });
@@ -180,7 +156,15 @@ function MetaAds() {
     } finally {
       setHardLoading(false);
     }
-  }, [loadCachedMerged, selectedAccount]);
+  }, [loadCachedMerged]);
+
+  // Listen for refresh trigger from Dashboard
+  useEffect(() => {
+    if (onRefreshTrigger > 0) {
+      console.log('[MetaAds] Refresh triggered from Dashboard');
+      handleHardRefresh();
+    }
+  }, [onRefreshTrigger, handleHardRefresh]);
 
   const handleConsultantRefresh = useCallback(async () => {
     setConsultantLoading(true);
@@ -240,11 +224,19 @@ function MetaAds() {
 
   const dataArray = Array.isArray(mergedData) ? mergedData : [];
   
+  // Generate dynamic campaign tabs from data
+  const campaignTabs = React.useMemo(() => {
+    if (!dataArray || dataArray.length === 0) return ['All Campaigns'];
+    const unique = new Set(dataArray.map(r => r.campaignname).filter(Boolean));
+    return ['All Campaigns', ...Array.from(unique).sort()];
+  }, [dataArray]);
+  
   // Debug logging
   console.log('[MetaAds] Data state:', { 
     mergedData: mergedData ? 'exists' : 'null', 
     dataArrayLength: dataArray.length,
-    selectedAccount
+    selectedCampaign,
+    campaignTabs
   });
 
   const monthOptions = React.useMemo(() => buildMonthOptions(dataArray), [dataArray]);
@@ -255,20 +247,20 @@ function MetaAds() {
     }
   }, [monthOptions, selectedMonthKey]);
 
-  // All data for the selected account (no month filter)
-  const accountData = React.useMemo(() => {
+  // All data for the selected campaign (no month filter)
+  const campaignData = React.useMemo(() => {
     let rows = dataArray;
-    if (selectedAccount && selectedAccount !== 'Account Overview') {
-      rows = rows.filter((row) => row?.accountname === selectedAccount);
+    if (selectedCampaign && selectedCampaign !== 'All Campaigns') {
+      rows = rows.filter((row) => row?.campaignname === selectedCampaign);
     }
-    console.log('[MetaAds] accountData computed:', { selectedAccount, totalRows: rows.length, rows });
+    console.log('[MetaAds] campaignData computed:', { selectedCampaign, totalRows: rows.length, rows });
     return rows;
-  }, [dataArray, selectedAccount]);
+  }, [dataArray, selectedCampaign]);
 
   const filteredData = React.useMemo(() => {
     let rows = dataArray;
-    if (selectedAccount && selectedAccount !== 'Account Overview') {
-      rows = rows.filter((row) => row?.accountname === selectedAccount);
+    if (selectedCampaign && selectedCampaign !== 'All Campaigns') {
+      rows = rows.filter((row) => row?.campaignname === selectedCampaign);
     }
     const monthMeta = monthOptions.find((m) => m.key === selectedMonthKey);
     rows = filterRowsByMonth(rows, monthMeta);
@@ -280,14 +272,14 @@ function MetaAds() {
       const bM = Number(b?.month_index) || (b?.month_name ? 0 : 0);
       return (bM || 0) - (aM || 0);
     });
-  }, [dataArray, selectedAccount, selectedMonthKey, monthOptions]);
+  }, [dataArray, selectedCampaign, selectedMonthKey, monthOptions]);
 
   return (
     <div id="meta-ads-root" className="meta-ads-page">
       <div className="meta-ads-header pdf-hide">
         <div>
           <h2>Meta Ads</h2>
-          <p className="meta-ads-subtitle">Showing aggregated monthly data per account</p>
+          <p className="meta-ads-subtitle">Showing monthly data per campaign</p>
         </div>
         {mainViewMode === 'accounts' && (
           <div className="meta-ads-actions">
@@ -304,22 +296,44 @@ function MetaAds() {
       </div>
 
       {status && <div className="meta-ads-status">{status}</div>}
+      {loadProgress > 0 && loadProgress < 100 && (
+        <div style={{ margin: '12px 0', padding: '8px', background: '#f0f9ff', borderRadius: '4px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: '#0369a1' }}>
+            Loading Meta Ads Data: {loadProgress}%
+          </div>
+          <div style={{ width: '100%', height: '6px', background: '#e0f2fe', borderRadius: '3px', overflow: 'hidden' }}>
+            <div style={{ width: `${loadProgress}%`, height: '100%', background: '#0284c7', transition: 'width 0.3s ease' }} />
+          </div>
+        </div>
+      )}
       {error && <div className="meta-ads-error">{error}</div>}
 
       {/* Main View Switcher */}
-      <div className="period-selector" style={{ marginBottom: '1.5rem', background: 'white', padding: '0.5rem', borderRadius: '8px', border: '1px solid #edf2f7' }}>
-        <button
-          className={`period-btn ${mainViewMode === 'accounts' ? 'active' : ''}`}
-          onClick={() => setMainViewMode('accounts')}
-        >
-          Accounts View
-        </button>
-        <button
-          className={`period-btn ${mainViewMode === 'consultants' ? 'active' : ''}`}
-          onClick={() => setMainViewMode('consultants')}
-        >
-          Consultants View
-        </button>
+      <div className="period-selector" style={{ marginBottom: '1.5rem', background: 'white', padding: '0.5rem', borderRadius: '8px', border: '1px solid #edf2f7', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            className={`period-btn ${mainViewMode === 'accounts' ? 'active' : ''}`}
+            onClick={() => setMainViewMode('accounts')}
+          >
+            Accounts View
+          </button>
+          <button
+            className={`period-btn ${mainViewMode === 'consultants' ? 'active' : ''}`}
+            onClick={() => setMainViewMode('consultants')}
+          >
+            Consultants View
+          </button>
+        </div>
+        {mainViewMode === 'consultants' && (
+          <button
+            className="consultant-refresh-btn"
+            onClick={handleConsultantRefresh}
+            disabled={consultantLoading}
+            title="Refresh consultant data"
+          >
+            {consultantLoading ? 'Loading...' : 'Refresh'}
+          </button>
+        )}
       </div>
 
       <div className="meta-ads-content">
@@ -330,41 +344,45 @@ function MetaAds() {
             </div>
             {!mergedData && <p className="muted">No Meta Ads data loaded yet. Click "Refresh Data" to fetch.</p>}
 
-        {/* Account tabs */}
+        {/* Campaign dropdown */}
         <div className="meta-ads-filters pdf-hide" style={{ marginBottom: '2rem' }}>
-          <div className="period-selector" role="tablist" style={{ flexWrap: 'wrap' }}>
-            {ACCOUNT_TABS.map((acct) => (
-              <button
-                key={acct}
-                className={`period-btn ${acct === selectedAccount ? 'active' : ''}`}
-                onClick={() => setSelectedAccount(acct)}
-              >
-                {acct}
-              </button>
-            ))}
-          </div>
-
-          {monthOptions.length > 0 && viewMode === 'monthly' && selectedAccount !== 'Account Overview' && (
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <div className="meta-ads-month-filter">
-              <label htmlFor="meta-ads-month">Month:</label>
+              <label htmlFor="meta-ads-campaign" style={{ fontWeight: 600, marginRight: '0.5rem' }}>Campaign:</label>
               <select
-                id="meta-ads-month"
-                value={selectedMonthKey || ''}
-                onChange={(e) => setSelectedMonthKey(e.target.value)}
+                id="meta-ads-campaign"
+                value={selectedCampaign || 'All Campaigns'}
+                onChange={(e) => setSelectedCampaign(e.target.value)}
+                style={{ minWidth: '250px' }}
               >
-                {monthOptions.map((m) => (
-                  <option key={m.key} value={m.key}>{m.label}</option>
+                {campaignTabs.map((campaign) => (
+                  <option key={campaign} value={campaign}>{campaign}</option>
                 ))}
               </select>
             </div>
-          )}
+
+            {monthOptions.length > 0 && viewMode === 'monthly' && selectedCampaign !== 'All Campaigns' && (
+              <div className="meta-ads-month-filter">
+                <label htmlFor="meta-ads-month" style={{ fontWeight: 600, marginRight: '0.5rem' }}>Month:</label>
+                <select
+                  id="meta-ads-month"
+                  value={selectedMonthKey || ''}
+                  onChange={(e) => setSelectedMonthKey(e.target.value)}
+                >
+                  {monthOptions.map((m) => (
+                    <option key={m.key} value={m.key}>{m.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Display account view based on selected tab */}
-        {selectedAccount && selectedAccount !== 'Account Overview' ? (
+        {/* Display campaign view based on selected tab */}
+        {selectedCampaign && selectedCampaign !== 'All Campaigns' ? (
           (() => {
             const monthMeta = monthOptions.find((m) => m.key === selectedMonthKey);
-            console.log('[MetaAds] Rendering view with:', { selectedAccount, viewMode, selectedMonthKey, monthMeta, dataLength: filteredData?.length });
+            console.log('[MetaAds] Rendering view with:', { selectedCampaign, viewMode, selectedMonthKey, monthMeta, dataLength: filteredData?.length });
             return (
               <>
                 {/* Mini Tab Switcher */}
@@ -385,11 +403,11 @@ function MetaAds() {
 
                 {viewMode === 'monthly' ? (
                   <>
-                    <MetaAdsAccountView data={filteredData} accountName={selectedAccount} />
-                    <MonthComparison data={accountData} accountName={selectedAccount} monthOptions={monthOptions} />
+                    <MetaAdsAccountView data={filteredData} accountName={selectedCampaign} />
+                    <MonthComparison data={campaignData} accountName={selectedCampaign} monthOptions={monthOptions} />
                   </>
                 ) : (
-                  <YearlyView data={accountData} accountName={selectedAccount} />
+                  <YearlyView data={campaignData} accountName={selectedCampaign} />
                 )}
               </>
             );

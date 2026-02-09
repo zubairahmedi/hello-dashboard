@@ -8,6 +8,35 @@
   padding: 0;
 }
 
+/* Consultant Refresh Button */
+.consultant-refresh-btn {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
+}
+
+.consultant-refresh-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0369a1 0%, #025a96 100%);
+  box-shadow: 0 4px 8px rgba(2, 132, 199, 0.3);
+  transform: translateY(-1px);
+}
+
+.consultant-refresh-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.consultant-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Center tables within Consultants View and remove vertical scrollbar */
 .consultant-meta-ads-view .table-scroll {
   overflow-y: visible; /* allow full height without cropping */

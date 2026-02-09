@@ -50,7 +50,7 @@ if ($SkipBuild) {
 # Step 2: Verify URLs in Build
 Write-Host "`nStep 2: Verifying new domains in build..." @InfoColor
 try {
-    $hasNewDomain = @(Get-ChildItem -Path ".\build\" -Recurse -File | Select-String -Pattern "aiclinicgenius.com")
+    $hasNewDomain = @(Get-ChildItem -Path ".\build\" -Recurse -File | Select-String -Pattern "franchisedataexpert.com")
     $hasOldDomain = @(Get-ChildItem -Path ".\build\" -Recurse -File | Select-String -Pattern "srv1123998")
     
     if ($hasOldDomain.Count -gt 0) {
@@ -62,7 +62,7 @@ try {
     }
     
     if ($hasNewDomain.Count -gt 0) {
-        Write-Host "New domain (aiclinicgenius.com) verified in build" @SuccessColor
+        Write-Host "New domain (franchisedataexpert.com) verified in build" @SuccessColor
         Write-Host "   Found in $($hasNewDomain.Count) file(s)" @SuccessColor
     } else {
         Write-Host "WARNING: New domain not found in build" @WarningColor
@@ -164,7 +164,7 @@ Write-Host "      ssh $SSH_USER@$VPS_IP" @InfoColor
 Write-Host "      docker ps | grep hello-dashboard" @InfoColor
 Write-Host "" @InfoColor
 Write-Host "   2. Test from browser:" @InfoColor
-Write-Host "      https://dashboard.aiclinicgenius.com/" @SuccessColor
+Write-Host "      https://franchisedataexpert.com/" @SuccessColor
 Write-Host "" @InfoColor
 Write-Host "   3. Check files uploaded:" @InfoColor
 Write-Host "      ssh $SSH_USER@$VPS_IP" @InfoColor

@@ -12,7 +12,7 @@ import {
   Cell,
   Legend 
 } from 'recharts';
-import { Database, TrendingUp, Award, Search, ArrowUpDown, Zap } from 'lucide-react';
+import { Database, TrendingUp, Award, Search, ArrowUpDown, Zap, RefreshCw } from 'lucide-react';
 import './Sources.css';
 import API_CONFIG from '../../config/apiConfig';
 import {
@@ -42,7 +42,7 @@ const categorizeSource = (sourceName) => {
   return 'Other';
 };
 
-function Sources() {
+function Sources({ refreshTrigger = 0 }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -63,6 +63,14 @@ function Sources() {
     { value: 'last6Months', label: '6 Months' },
     { value: 'last1Year', label: '1 Year' }
   ];
+
+  // Listen for refresh trigger from Dashboard
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      console.log('[Sources] Refresh triggered from Dashboard');
+      fetchSourcesData();
+    }
+  }, [refreshTrigger]);
 
   // Initialize IndexedDB and load cached data on mount
   useEffect(() => {
@@ -277,6 +285,19 @@ function Sources() {
 
   return (
     <div id="sources-root" className="sources-container">
+      {/* Refresh Button */}
+      <div className="sources-action-bar pdf-hide">
+        <button 
+          className="sources-btn-refresh"
+          onClick={handleRefresh}
+          disabled={loading}
+          title="Refresh Sources data"
+        >
+          <RefreshCw size={16} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+          {loading ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
+
       {/* Data Freshness Indicator */}
       {dataFreshness && (
         <div className="sources-freshness-badge pdf-hide">

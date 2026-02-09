@@ -38,6 +38,7 @@ function Dashboard({ onLogout }) {
   const [dataFreshness, setDataFreshness] = useState(null); // Track data freshness
   const [isCached, setIsCached] = useState(false); // Track if data is from cache
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [metaAdsRefreshTrigger, setMetaAdsRefreshTrigger] = useState(0);
 
   // Initialize IndexedDB on component mount
   useEffect(() => {
@@ -108,7 +109,13 @@ function Dashboard({ onLogout }) {
   };
 
   const handleRefresh = () => {
-    fetchData(true); // Force refresh ignoring cache
+    if (activeTab === 'metaAds') {
+      // Trigger Meta Ads refresh by incrementing counter
+      setMetaAdsRefreshTrigger(prev => prev + 1);
+    } else {
+      // Fetch Airtable data for other tabs
+      fetchData(true);
+    }
   };
 
   const handleExport = () => {
@@ -235,10 +242,12 @@ function Dashboard({ onLogout }) {
           </div>
           
           <div className="header-actions">
-            <button className="btn-action" onClick={handleRefresh} disabled={loading}>
-              <RefreshCw size={16} className={loading ? 'spin' : ''} />
-              {loading ? 'Refreshing...' : 'Refresh'}
-            </button>
+            {(activeTab === 'totals' || activeTab === 'metaAds' || activeTab === 'googleAds') && (
+              <button className="btn-action" onClick={handleRefresh} disabled={loading}>
+                <RefreshCw size={16} className={loading ? 'spin' : ''} />
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </button>
+            )}
             
             {(activeTab === 'totals' || activeTab === 'metaAds' || activeTab === 'sources' || activeTab === 'googleAds') && (
               <button className="btn-action btn-primary" onClick={handleExport}>
@@ -269,7 +278,7 @@ function Dashboard({ onLogout }) {
           )}
 
           {activeTab === 'metaAds' && (
-            <MetaAds />
+            <MetaAds onRefreshTrigger={metaAdsRefreshTrigger} />
           )}
 
           {activeTab === 'sources' && (

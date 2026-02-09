@@ -3,7 +3,7 @@
  * Fetches and manages consultant-level Meta Ads tagged contacts data
  */
 
-const CONSULTANT_META_ADS_WEBHOOK = 'https://n8n.aiclinicgenius.com/webhook/d27d1b26-441a-490c-b5fb-5f6633dab10c';
+const CONSULTANT_META_ADS_WEBHOOK = 'https://n8n.franchisedataexpert.com/webhook/meta_ads_consultant_webhook';
 export const CONSULTANT_META_ADS_KEY = 'consultantMetaAds';
 const TIME_WINDOWS = ['30', '90', '150', '365'];
 const DEFAULT_TAG_KEY = 'allFacebook';
@@ -27,8 +27,9 @@ function normalizeConsultantRecord(record) {
       ? record.totalFacebookContacts
       : TIME_WINDOWS.reduce((sum, window) => sum + (countsByTimeWindow[window] || 0), 0);
 
+  // Try to get tagCountsByTimeWindow, or fall back to sourceCountsByTimeWindow
+  const tagCountsSource = record.tagCountsByTimeWindow || record.sourceCountsByTimeWindow;
   const tagCountsByTimeWindow = {};
-  const tagCountsSource = record.tagCountsByTimeWindow;
   TIME_WINDOWS.forEach((window) => {
     const windowTags = tagCountsSource?.[window];
     if (windowTags && typeof windowTags === 'object') {

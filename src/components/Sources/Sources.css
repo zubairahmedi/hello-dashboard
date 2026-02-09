@@ -3,6 +3,42 @@
   width: 100%;
 }
 
+/* Action bar with refresh button */
+.sources-action-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sources-btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sources-btn-refresh:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.sources-btn-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Data freshness badge */
 .sources-freshness-badge {
   display: inline-block;

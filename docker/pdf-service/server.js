@@ -29,7 +29,7 @@ const logStep = (msg, extra = {}) => {
 
 // CORS: Allow dashboard + localhost in development
 const allowedOrigins = [
-  'https://dashboard.aiclinicgenius.com',
+  'https://franchisedataexpert.com',
   'http://localhost:3000'
 ];
 

@@ -4,7 +4,7 @@
  * Uses SPECIAL WEBHOOK (different from main dashboard webhook)
  */
 
-const MONTHLY_SPECIAL_WEBHOOK = 'https://n8n.aiclinicgenius.com/webhook/c4da33a4-5da9-4570-93b8-d0f89385ed';
+const MONTHLY_SPECIAL_WEBHOOK = 'https://n8n.franchisedataexpert.com/webhook/c4da33a4-5da9-4570-93b8-d0f89385ed';
 
 // ⚠️ HARDCODED MONTHLY WEBHOOK IDS (verified and correct)
 // These IDs are ONLY for the monthly webhook - NEVER use these for main Airtable webhook

@@ -21,3 +21,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Exclude documentation files
+ARCHITECTURE.md
+BACKUP_OLD_CONFIG.md

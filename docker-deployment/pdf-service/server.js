@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware - CORS configuration (multiple allowed origins)
 const corsOptions = {
   origin: [
-    'https://dashboard.aiclinicgenius.com',
+    'https://franchisedataexpert.com',
     'http://localhost:3000'
   ],
   credentials: true,
