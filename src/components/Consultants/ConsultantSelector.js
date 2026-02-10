@@ -4,12 +4,14 @@ import LisaMagnan from './LisaMagnan';
 import PriscillaC from './PriscillaC';
 import AustinTouey from './AustinTouey';
 import KeithTalty from './KeithTalty';
+import EllaS from './EllaS';
 
 const consultantComponents = {
   'Lisa Magnan': LisaMagnan,
   'Priscilla C.': PriscillaC,
   'Austin Touey': AustinTouey,
   'Keith Talty': KeithTalty,
+  'Ella S': EllaS,
 };
 
 export default function ConsultantSelector({ data }) {
