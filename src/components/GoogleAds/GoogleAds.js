@@ -188,6 +188,15 @@ function formatPercent(value) {
   return `${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 }
 
+function hasAnyGoogleAdsData(row) {
+  return (
+    (Number(row?.impressions) || 0) > 0 ||
+    (Number(row?.clicks) || 0) > 0 ||
+    (Number(row?.conversions) || 0) > 0 ||
+    (Number(row?.cost) || 0) > 0
+  );
+}
+
 function GoogleAds() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -226,15 +235,23 @@ function GoogleAds() {
     fetchData();
   }, [fetchData]);
 
+  const activeRows = useMemo(() => rows.filter(hasAnyGoogleAdsData), [rows]);
+
   const campaignOptions = useMemo(() => {
-    const unique = new Set(rows.map((r) => r.campaign_name));
+    const unique = new Set(activeRows.map((r) => r.campaign_name));
     return ['All Campaigns', ...Array.from(unique)];
-  }, [rows]);
+  }, [activeRows]);
+
+  useEffect(() => {
+    if (!campaignOptions.includes(selectedCampaign)) {
+      setSelectedCampaign('All Campaigns');
+    }
+  }, [campaignOptions, selectedCampaign]);
 
   const timeFilteredRows = useMemo(() => {
-    if (!selectedTimewindow) return rows;
-    return rows.filter((row) => row.timewindow === selectedTimewindow);
-  }, [rows, selectedTimewindow]);
+    if (!selectedTimewindow) return activeRows;
+    return activeRows.filter((row) => row.timewindow === selectedTimewindow);
+  }, [activeRows, selectedTimewindow]);
 
   const campaignFilteredRows = useMemo(() => {
     if (selectedCampaign === 'All Campaigns') return timeFilteredRows;
@@ -289,7 +306,7 @@ function GoogleAds() {
 
   const trendData = useMemo(() => {
     return TIMEWINDOW_OPTIONS.map((window) => {
-      const scoped = rows.filter((r) => r.timewindow === window);
+      const scoped = activeRows.filter((r) => r.timewindow === window);
       const totals = aggregateMetrics(scoped);
       return {
         window,
@@ -298,7 +315,7 @@ function GoogleAds() {
         conversions: totals.conversions
       };
     });
-  }, [rows]);
+  }, [activeRows]);
 
   const lastUpdatedLabel = useMemo(() => {
     if (!lastUpdated) return null;

@@ -39,6 +39,16 @@ function round2(n) {
   return Math.round(x * 100) / 100;
 }
 
+function hasAnyPerformanceData(row) {
+  return (
+    toNumber(row?.totalspend) > 0 ||
+    toNumber(row?.totalleads) > 0 ||
+    toNumber(row?.impressions) > 0 ||
+    toNumber(row?.reach) > 0 ||
+    toNumber(row?.clicks) > 0
+  );
+}
+
 // Category filter removed - now using campaign-based structure
 
 function OverviewView({ data }) {
@@ -220,7 +230,9 @@ function OverviewView({ data }) {
       };
     });
 
-    return list.sort((a, b) => a.accountname.localeCompare(b.accountname));
+    return list
+      .filter(hasAnyPerformanceData)
+      .sort((a, b) => a.accountname.localeCompare(b.accountname));
   }, [filteredRows, selectedYear]);
 
   // Table data with search and sort
